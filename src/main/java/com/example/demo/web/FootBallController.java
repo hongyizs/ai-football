@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static com.example.demo.util.HttpClientUtil.METHOD_POST;
 
@@ -38,7 +39,7 @@ public class FootBallController {
 
     // 同主客历史交锋
     private static String url5 = "https://webapi.sporttery.cn/gateway/uniform/football/getResultHistoryV1.qry?" +
-            "sportteryMatchId=%s&termLimits=2&tournamentFlag=0&homeAwayFlag=1";
+            "sportteryMatchId=%s&termLimits=4&tournamentFlag=0&homeAwayFlag=0";
 
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -134,7 +135,15 @@ public class FootBallController {
             MatchInfoResponse3 matchInfoResponse3 = JSONObject.parseObject(s2, MatchInfoResponse3.class);
             MatchInfoValue3 value2 = matchInfoResponse3.getValue();
             List<MatchItem> matchList = value2.getMatchList();
-            matchList.forEach(matchItem -> {
+            List<MatchItem> collect = matchList.stream().filter(matchItem -> matchItem.getLeaguesAbbName().equals(map1.get("联赛类型："))).collect(Collectors.toList());
+            List<MatchItem> notCollect = matchList.stream().filter(matchItem -> !matchItem.getLeaguesAbbName().equals(map1.get("联赛类型："))).collect(Collectors.toList());
+            for(int i=collect.size();i<3;i++){
+                if(i>=notCollect.size()){
+                    break;
+                }
+                collect.add(notCollect.get(i));
+            }
+            collect.forEach(matchItem -> {
                 Map<String, Object> map3 = new HashMap<>();
                 map3.put("历史主队", matchItem.getHomeTeamAbbName());
                 map3.put("历史客队", matchItem.getAwayTeamAbbName());
@@ -160,8 +169,12 @@ public class FootBallController {
             if (!CollectionUtils.isEmpty(matchList)) {
                 matchList.stream().forEach(match -> {
                     Map<String, Object> map5 = new HashMap<>();
-                    map5.put("主队vs客队近期交锋比分", match.getFullCourtGoal());
-                    map5.put("主队vs客队近期交锋时间", match.getMatchDate());
+                    if(map1.get("主队").equals(match.getHomeTeamShortName())){
+                        map5.put("主队vs客队近期交锋比分", match.getFullCourtGoal());
+                    }else{
+                        map5.put("客队vs主队近期交锋比分", match.getFullCourtGoal());
+                    }
+                    map5.put("近期交锋时间", match.getMatchDate());
                     list5.add(map5);
                 });
             }
@@ -174,15 +187,15 @@ public class FootBallController {
         String url = "https://api.chatanywhere.tech/v1/chat/completions";
         // 构建请求体
         Map<String, Object> data = new HashMap<>();
+        //gpt-3.5-turbo-0125 便宜	gpt-3.5-turbo-ca 最便宜  //默认 gpt-3.5-turbo
         data.put("model", "gpt-3.5-turbo");
         data.put("temperature", 0.7);
         List<Map<String, String>> messages = new ArrayList<>();
         // 添加用户消息
-        String message = msg + " 根据主队客队最新赔率和主队客队近期交锋比分以及相同赔率下其他比赛的历史比分,给出推荐比分";
+        String message = msg + " 根据主队客队最新赔率和主队客队近期交锋比分以及相同赔率下其他比赛的历史比分,给出一个推荐比分";
         Map<String, String> userMsg = new HashMap<>();
         userMsg.put("role", "user");
         userMsg.put("content", message);
-
         messages.add(userMsg);
         data.put("messages", messages);
         Map<String, String> header = new HashMap<>();
@@ -232,8 +245,12 @@ public class FootBallController {
             List<Map<String, Object>> list5 = (List<Map<String, Object>>) re.get("list5");
             for (int k = 0; k < list5.size(); k++) {
                 Map<String, Object> map5 = list5.get(k);
-                sb.append("\\n近期交锋时间:").append(map5.get("主队vs客队近期交锋时间"));
-                sb.append("\\n近期交锋比分:").append(map5.get("主队vs客队近期交锋比分"));
+                sb.append("\\n近期交锋时间:").append(map5.get("近期交锋时间"));
+                if(map5.get("主队vs客队近期交锋比分")!=null){
+                    sb.append("\\n近期交锋比分 主队-客队:").append(map5.get("主队vs客队近期交锋比分"));
+                }else if(map5.get("客队vs主队近期交锋比分")!=null){
+                    sb.append("\\n近期交锋比分 客队-主队:").append(map5.get("客队vs主队近期交锋比分"));
+                }
             }
 
             List<Map<String, Object>> list = (List<Map<String, Object>>) re.get("list");
