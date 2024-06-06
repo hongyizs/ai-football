@@ -121,41 +121,61 @@ public class FootBallController {
         MatchInfoValue2 value1 = matchInfoResponse2.getValue();
         OddsHistory oddsHistory = value1.getOddsHistory();
         List<HadList> hhadList = oddsHistory.getHadList();
+        Map<String, Object> map2 = new HashMap<>();
+        HadList h;
         List<Map<String, Object>> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(hhadList)) {
-            HadList h = oddsHistory.getHadList().get(oddsHistory.getHadList().size() - 1);
-            Map<String, Object> map2 = new HashMap<>();
+            h = oddsHistory.getHadList().get(oddsHistory.getHadList().size() - 1);
             map2.put("主胜", h.getH());
             map2.put("客胜", h.getA());
             map2.put("平", h.getD());
-            String realUrl = String.format(url3, h.getH(), h.getA(), h.getD());
-            List<Map<String, Object>> list2 = new ArrayList<>();
+        } else {
+            h = oddsHistory.getHhadList().get(oddsHistory.getHhadList().size() - 1);
+            Integer i = Integer.valueOf(h.getGoalLine());
+            if (i > 0) {
+                //主队受让
+                map2.put("主胜", h.getH());
+                map2.put("客胜", h.getA());
+                map2.put("平", h.getD());
+                map2.put("主受让胜", i);
+            } else {
+                //主队让
+                map2.put("主胜", h.getH());
+                map2.put("客胜", h.getA());
+                map2.put("平", h.getD());
+                map2.put("主让胜", i);
 
-            String s2 = HttpClientUtil.doGet(realUrl, 20000);
-            MatchInfoResponse3 matchInfoResponse3 = JSONObject.parseObject(s2, MatchInfoResponse3.class);
-            MatchInfoValue3 value2 = matchInfoResponse3.getValue();
-            List<MatchItem> matchList = value2.getMatchList();
-            List<MatchItem> collect = matchList.stream().filter(matchItem -> matchItem.getLeaguesAbbName().equals(map1.get("联赛类型："))).collect(Collectors.toList());
-            List<MatchItem> notCollect = matchList.stream().filter(matchItem -> !matchItem.getLeaguesAbbName().equals(map1.get("联赛类型："))).collect(Collectors.toList());
-            for(int i=collect.size();i<3;i++){
-                if(i>=notCollect.size()){
-                    break;
-                }
-                collect.add(notCollect.get(i));
             }
-            collect.forEach(matchItem -> {
-                Map<String, Object> map3 = new HashMap<>();
-                map3.put("历史主队", matchItem.getHomeTeamAbbName());
-                map3.put("历史客队", matchItem.getAwayTeamAbbName());
-                map3.put("历史比分主：客", matchItem.getSectionsNo999());
-                map3.put("历史联赛类型:", matchItem.getLeaguesAbbName());
-                list2.add(map3);
-            });
-            map2.put("list2", list2);
-            list.add(map2);
-            map1.put("list", list);
-            result.add(map1);
+
         }
+
+        String realUrl = String.format(url3, h.getH(), h.getA(), h.getD());
+        List<Map<String, Object>> list2 = new ArrayList<>();
+
+        String s2 = HttpClientUtil.doGet(realUrl, 20000);
+        MatchInfoResponse3 matchInfoResponse3 = JSONObject.parseObject(s2, MatchInfoResponse3.class);
+        MatchInfoValue3 value2 = matchInfoResponse3.getValue();
+        List<MatchItem> matchList = value2.getMatchList();
+        List<MatchItem> collect = matchList.stream().filter(matchItem -> matchItem.getLeaguesAbbName().equals(map1.get("联赛类型："))).collect(Collectors.toList());
+        List<MatchItem> notCollect = matchList.stream().filter(matchItem -> !matchItem.getLeaguesAbbName().equals(map1.get("联赛类型："))).collect(Collectors.toList());
+        for (int i = collect.size(); i < 3; i++) {
+            if (i >= notCollect.size()) {
+                break;
+            }
+            collect.add(notCollect.get(i));
+        }
+        collect.forEach(matchItem -> {
+            Map<String, Object> map3 = new HashMap<>();
+            map3.put("历史主队", matchItem.getHomeTeamAbbName());
+            map3.put("历史客队", matchItem.getAwayTeamAbbName());
+            map3.put("历史比分主：客", matchItem.getSectionsNo999());
+            map3.put("历史联赛类型:", matchItem.getLeaguesAbbName());
+            list2.add(map3);
+        });
+        map2.put("list2", list2);
+        list.add(map2);
+        map1.put("list", list);
+        result.add(map1);
     }
 
     private static void loadRecentMatch(String matchId, Map<String, Object> map1) {
@@ -169,9 +189,9 @@ public class FootBallController {
             if (!CollectionUtils.isEmpty(matchList)) {
                 matchList.stream().forEach(match -> {
                     Map<String, Object> map5 = new HashMap<>();
-                    if(map1.get("主队").equals(match.getHomeTeamShortName())){
+                    if (map1.get("主队").equals(match.getHomeTeamShortName())) {
                         map5.put("主队vs客队近期交锋比分", match.getFullCourtGoal());
-                    }else{
+                    } else {
                         map5.put("客队vs主队近期交锋比分", match.getFullCourtGoal());
                     }
                     map5.put("近期交锋时间", match.getMatchDate());
@@ -200,7 +220,7 @@ public class FootBallController {
         data.put("messages", messages);
         Map<String, String> header = new HashMap<>();
         header.put("Content-Type", "application/json");
-        header.put("Authorization", "Bearer ");
+        header.put("Authorization", "Bearer sk-9CKemVLLZ3tXORzRzANPBHRFJcPfuBECHuPppVajz7OyS9B1");
         String response = HttpClientUtil.getHttpContent(url, METHOD_POST, JSONObject.toJSONString(data), header, 20000);
         ChatCompletion chatCompletion = JSONObject.parseObject(response, ChatCompletion.class);
         return chatCompletion.getChoices().get(0).getMessage().getContent();
@@ -246,9 +266,9 @@ public class FootBallController {
             for (int k = 0; k < list5.size(); k++) {
                 Map<String, Object> map5 = list5.get(k);
                 sb.append("\\n近期交锋时间:").append(map5.get("近期交锋时间"));
-                if(map5.get("主队vs客队近期交锋比分")!=null){
+                if (map5.get("主队vs客队近期交锋比分") != null) {
                     sb.append("\\n近期交锋比分 主队-客队:").append(map5.get("主队vs客队近期交锋比分"));
-                }else if(map5.get("客队vs主队近期交锋比分")!=null){
+                } else if (map5.get("客队vs主队近期交锋比分") != null) {
                     sb.append("\\n近期交锋比分 客队-主队:").append(map5.get("客队vs主队近期交锋比分"));
                 }
             }
@@ -256,7 +276,15 @@ public class FootBallController {
             List<Map<String, Object>> list = (List<Map<String, Object>>) re.get("list");
             for (int j = 0; j < list.size(); j++) {
                 Map<String, Object> l = list.get(j);
-                sb.append("\\n最新赔率：").append("主" + l.get("主胜")).append(" 平" + l.get("平")).append(" 客:" + l.get("客胜"));
+                if(l.get("主受让胜")!=null){
+                    sb.append("\\n最新赔率：").append("主+"+l.get("主受让胜") +" 球"+ l.get("主胜")).append(" 平" + l.get("平")).append(" 客:" + l.get("客胜"));
+
+                }else if(l.get("主让胜")!=null){
+                    sb.append("\\n最新赔率：").append("主"+l.get("主让胜") +" 球" + l.get("主胜")).append(" 平" + l.get("平")).append(" 客:" + l.get("客胜"));
+
+                }else{
+                    sb.append("\\n最新赔率：").append("主" + l.get("主胜")).append(" 平" + l.get("平")).append(" 客:" + l.get("客胜"));
+                }
                 List<Map<String, Object>> list2 = (List<Map<String, Object>>) l.get("list2");
                 if (!CollectionUtils.isEmpty(list2)) {
                     for (Map<String, Object> l2 : list2) {
