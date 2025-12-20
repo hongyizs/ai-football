@@ -309,7 +309,7 @@ public class FootBallController {
     }
 
     public static void main(String[] args) {
-        sendMatchInfo("ai");
+        sendMatchInfo("");
     }
 
 
