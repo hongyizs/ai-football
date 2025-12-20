@@ -55,19 +55,7 @@ public class FootballController {
         return ApiResponse.success("分析任务已启动");
     }
 
-    /**
-     * 获取分析结果（同步）
-     */
-    @GetMapping("/analyze/sync/{aiFlag}")
-    public ApiResponse<Object> analyzeSync(@PathVariable String aiFlag) {
-        try {
-            Object result = analysisService.analyzeMatches(aiFlag);
-            return ApiResponse.success(result);
-        } catch (Exception e) {
-            log.error("同步分析异常", e);
-            return ApiResponse.error("分析失败: " + e.getMessage());
-        }
-    }
+
 
     /**
      * 健康检查
