@@ -9,6 +9,9 @@ public class OddsHistory {
     private List<CrsList> crsList;
     private String homeTeamAbbName;
     private List<HadList> hadList;
+    //让球
+    private List<HadList> hhadList;
+
     private List<TtgList> ttgList;
     private String leagueAbbName;
     private String leagueId;
@@ -18,6 +21,10 @@ public class OddsHistory {
     private int awayTeamId;
     private int matchId;
     private List<HafuList> hafuList;
+
+    public void setHadList(List<HadList> hadList) {
+        this.hadList = hadList;
+    }
 
     // Getter and Setter methods
     public String getAwayTeamAllName() {
@@ -64,8 +71,13 @@ public class OddsHistory {
         return hadList;
     }
 
-    public void setHhadList(List<HadList> hadList) {
-        this.hadList = hadList;
+
+    public List<HadList> getHhadList() {
+        return hhadList;
+    }
+
+    public void setHhadList(List<HadList> hhadList) {
+        this.hhadList = hhadList;
     }
 
     public List<TtgList> getTtgList() {
