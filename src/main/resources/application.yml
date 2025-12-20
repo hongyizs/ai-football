@@ -2,3 +2,12 @@ server:
   port: 9000
   servlet:
     context-path: /demo
+
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: sk-173830c5bf894d97b35df2a23d107ab7
+      model-name: deepseek-chat
+      log-requests: true
+      log-responses: true
+      base-url: https://api.deepseek.com
