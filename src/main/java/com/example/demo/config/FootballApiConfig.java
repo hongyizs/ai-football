@@ -14,7 +14,7 @@ public class FootballApiConfig {
     private String fixedBonusUrl = "https://webapi.sporttery.cn/gateway/uniform/football/getFixedBonusV1.qry?clientCode=3001&matchId=";
     private String searchOddsUrl = "https://webapi.sporttery.cn/gateway/uniform/football/searchOddsV1.qry?channel=c&type=&single=0&h=%s&a=%s&d=%s";
     private String resultHistoryUrl = "https://webapi.sporttery.cn/gateway/uniform/football/getResultHistoryV1.qry?" +
-            "sportteryMatchId=%s&termLimits=2&tournamentFlag=0&homeAwayFlag=0";
+            "sportteryMatchId=%s&termLimits=10&tournamentFlag=0&homeAwayFlag=0";
 
     // 飞书Webhook
     private String feishuWebhookUrl = "https://open.feishu.cn/open-apis/bot/v2/hook/a553e701-25e0-4e58-ad26-920fde4c2631";

@@ -1,7 +1,7 @@
 server:
   port: 9000
   servlet:
-    context-path: /demo
+    context-path: /foot
 
 langchain4j:
   open-ai:
@@ -11,7 +11,12 @@ langchain4j:
       log-requests: true
       log-responses: true
       base-url: https://api.deepseek.com
-
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/foot_core?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true&allowPublicKeyRetrieval=true
 football:
   api:
     # 彩票API
@@ -21,12 +26,18 @@ football:
     result-history-url: "https://webapi.sporttery.cn/gateway/uniform/football/getResultHistoryV1.qry?sportteryMatchId=%s&termLimits=2&tournamentFlag=0&homeAwayFlag=0"
     # 飞书Webhook
     feishu-webhook-url: "https://open.feishu.cn/open-apis/bot/v2/hook/a553e701-25e0-4e58-ad26-920fde4c2631"
-spring:
-  jackson:
-    date-format: "yyyy-MM-dd HH:mm:ss"
-    time-zone: "GMT+8"
-  application:
-    name: football-analysis-service
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      field-strategy: NOT_EMPTY
+  configuration:
+    call-setters-on-nulls: true
+    use-generated-keys: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 logging:
   level:

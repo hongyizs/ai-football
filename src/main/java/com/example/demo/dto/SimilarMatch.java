@@ -1,7 +1,6 @@
 package com.example.demo.dto;
 
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.demo.domain.BaseEntity;
@@ -19,8 +18,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("historical_match")
-public class HistoricalMatch extends BaseEntity {
+@TableName("similar_match")
+public class SimilarMatch extends BaseEntity {
     @TableId
     private Integer  id;
     private String matchId;
@@ -29,4 +28,10 @@ public class HistoricalMatch extends BaseEntity {
     private String score;
     private String league;
     private String matchDate;
+    //ke
+    private String a;
+    //ping
+    private String d;
+    //zhu
+    private String h;
 }

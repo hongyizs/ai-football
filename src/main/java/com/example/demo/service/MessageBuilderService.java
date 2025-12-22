@@ -25,7 +25,6 @@ public class MessageBuilderService {
 
         // 添加说明
         elements.add(createTextElement("足球比赛分析报告\n分析时间：" + new Date()));
-        elements.add(createTextElement("带AI分析,请勿频繁点击: https://www.xingxing2019.cn/demo/api/match/analyze/ai"));
         elements.add(createDivider());
 
         // 添加每个比赛分析

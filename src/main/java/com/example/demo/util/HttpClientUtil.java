@@ -35,8 +35,8 @@ public class HttpClientUtil {
                 .build();
     }
 
-    public static String doGet(String url, int timeout) throws IOException {
-        Map<String,String> header=new HashMap<>();
+    public static String doGet(String url, int timeout) {
+        Map<String, String> header = new HashMap<>();
         header.put("origin", "https://m.sporttery.cn");
         header.put("accept", "application/json, text/plain, */*");
         header.put("accept-language", "zh-CN,zh;q=0.9");
@@ -58,7 +58,7 @@ public class HttpClientUtil {
     }
 
     public static String getHttpContent(String url, String method, String body,
-                                        Map<String, String> headers, int timeout) throws IOException {
+                                        Map<String, String> headers, int timeout) {
 
         HttpRequestBase request = createRequest(url, method, body);
 
@@ -85,7 +85,10 @@ public class HttpClientUtil {
             } else {
                 throw new IOException("HTTP请求失败，状态码: " + statusCode + ", 响应: " + result);
             }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
+        return null;
     }
 
     private static HttpRequestBase createRequest(String url, String method, String body) {
