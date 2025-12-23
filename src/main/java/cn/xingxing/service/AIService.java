@@ -25,6 +25,7 @@ public class AIService {
 
     public String analyzeMatch(MatchAnalysis analysis) {
         String prompt = buildAnalysisPrompt(analysis);
+        log.info("prompt:{}", prompt);
         String chat = assistant.chat(prompt);
         AiAnalysisResult aiAnalysisResult = new AiAnalysisResult();
         aiAnalysisResult.setMatchId(analysis.getMatchId());
@@ -39,7 +40,6 @@ public class AIService {
         aiAnalysisResult.setAiAnalysis(chat);
         aiAnalysisResultMapper.insert(aiAnalysisResult);
         log.info("比赛分析结果： {}", chat);
-        // 使用Assistant接口（如果有的话）或直接调用API
         return chat;
     }
 
@@ -52,17 +52,25 @@ public class AIService {
                         赔率数据：
                         %s      
                         近期交锋：
+                        %s
+                        比赛近况
+                        %s
+                        比赛特征
                         %s    
                         请从以下维度进行综合分析：
                         1. **赔率分析**：解读当前赔率反映的市场预期和胜负概率分布
                         2. **基本面分析**：基于历史交锋记录分析两队战术风格、心理优势和近期状态
-                        3. **进球预期**：结合两队攻防特点预测可能的进球数范围       
-                        请给出2个最可能的比分预测。
+                        3. **多因素分析**：基于近期比赛特征、比赛近况分析
+                        4. **进球预期**：结合两队攻防特点预测可能的进球数范围  
+                        权重比例：赔率0.4 基本面0.3 多因素0.3     
+                        请给出最多三个场景最可能的比分预测。
                         """,
                 analysis.getHomeTeam(), analysis.getAwayTeam(),
                 analysis.getLeague(), analysis.getMatchTime(),
                 analysis.getOddsHistory(),
-                analysis.getRecentMatches()
+                analysis.getRecentMatches(),
+                analysis.getMatchHistoryData(),
+                analysis.getMatchAnalysisData()
         );
     }
 

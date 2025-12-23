@@ -21,6 +21,8 @@ public class MatchAnalysis {
     private String league;
     private List<OddsInfo> oddsHistory;
     private List<HistoricalMatch> recentMatches;
+    private MatchAnalysisData matchAnalysisData;
+    private MatchHistoryData  matchHistoryData;
     private String aiAnalysis;
 }
 

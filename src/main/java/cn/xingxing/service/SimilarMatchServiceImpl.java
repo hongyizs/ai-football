@@ -35,7 +35,7 @@ public class SimilarMatchServiceImpl implements SimilarMatchService {
             LambdaQueryWrapper<SimilarMatch> similarMatchLambdaQueryWrapper = new LambdaQueryWrapper<>();
             similarMatchLambdaQueryWrapper.eq(SimilarMatch::getMatchId, matchId);
             List<SimilarMatch> similarMatches = similarMatchMapper.selectList(similarMatchLambdaQueryWrapper);
-            if(!CollectionUtils.isEmpty(similarMatches)){
+            if(CollectionUtils.isEmpty(similarMatches)){
                 dataService.loadSimilarMatch(Integer.parseInt(matchId));
                 return similarMatchMapper.selectList(similarMatchLambdaQueryWrapper);
             }

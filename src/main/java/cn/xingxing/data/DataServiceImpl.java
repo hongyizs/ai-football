@@ -110,9 +110,30 @@ public class DataServiceImpl implements DataService {
             hadLists.forEach(hadList -> {
                 List<SimilarMatch> similarMatches = getSimilarMatches(hadList.getH(), hadList.getA(), hadList.getD(), hadList.getMatchId());
                 similarMatchMapper.insertOrUpdate(similarMatches);
+                List<SimilarMatch> similarMatches2 = getSimilarMatches2(hadList.getH(), hadList.getA(), hadList.getD(), hadList.getMatchId());
+                similarMatchMapper.insertOrUpdate(similarMatches2);
             });
         }
         return 0;
+    }
+
+    private List<SimilarMatch> getSimilarMatches2(String homeWin, String awayWin, String draw, String matchId) {
+        try {
+            String url = String.format(apiConfig.getSearchOddsUrl2(), homeWin, awayWin, draw);
+            String response = HttpClientUtil.doGet(url, apiConfig.getHttpConnectTimeout());
+
+            MatchInfoResponse3 matchInfoResponse3 = JSONObject.parseObject(response, MatchInfoResponse3.class);
+            List<MatchItem> matchList = matchInfoResponse3.getValue().getMatchList();
+
+            if (!CollectionUtils.isEmpty(matchList)) {
+                return matchList.stream()
+                        .map(f->convertMatchItem(f,homeWin,awayWin,draw,matchId))
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            log.error("获取相似比赛失败", e);
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -182,6 +203,7 @@ public class DataServiceImpl implements DataService {
 
     private SimilarMatch convertMatchItem(MatchItem item, String homeWin, String awayWin, String draw, String matchId) {
         return SimilarMatch.builder()
+                .id(matchId+"-"+homeWin+"-"+draw+"-"+awayWin)
                 .homeTeam(item.getHomeTeamAbbName())
                 .matchId(String.valueOf(matchId))
                 .h(String.valueOf(homeWin))

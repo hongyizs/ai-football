@@ -103,7 +103,10 @@ public class FootballAnalysisService {
 
             // 获取赔率历史
             analysis.setOddsHistory(getOddsHistory(matchId));
-
+            //特征数据
+            analysis.setMatchAnalysisData(getMatchAnalysisData(matchId));
+            //近期比赛
+            analysis.setMatchHistoryData(getMatchHistoryData(matchId));
             // AI分析
             if ("ai".equals(aiInfo)) {
                 analysis.setAiAnalysis(aiService.analyzeMatch(analysis));
@@ -116,6 +119,31 @@ public class FootballAnalysisService {
                     match.getHomeTeamAbbName(), match.getAwayTeamAbbName(), e);
             return null;
         }
+    }
+
+    private MatchHistoryData getMatchHistoryData(String matchId) {
+        String url = String.format(apiConfig.getMatchHistoryUrl(),matchId);
+        String response = HttpClientUtil.doGet(url, apiConfig.getHttpConnectTimeout());
+
+        MatchHistoryResponse matchAnalysisResponse = JSONObject.parseObject(response, MatchHistoryResponse.class);
+        return matchAnalysisResponse.getValue();
+
+    }
+
+    private MatchAnalysisData getMatchAnalysisData(String matchId) {
+        try {
+            String url = String.format(apiConfig.getMatchFeatureUrl(),matchId);
+            String response = HttpClientUtil.doGet(url, apiConfig.getHttpConnectTimeout());
+
+            MatchAnalysisResponse matchAnalysisResponse = JSONObject.parseObject(response, MatchAnalysisResponse.class);
+            return matchAnalysisResponse.getValue();
+
+
+        } catch (Exception e) {
+            log.error("获取比赛特征失败", e);
+        }
+
+        return null;
     }
 
     private LocalDateTime parseMatchTime(String date, String time) {
@@ -170,8 +198,7 @@ public class FootballAnalysisService {
             List<HadList> hhadList = hadListService.findHadList(matchId);
 
             if (!CollectionUtils.isEmpty(hhadList)) {
-                HadList latestOdds = hhadList.get(hhadList.size() - 1);
-
+                HadList latestOdds = hhadList.getLast();
                 // 获取相似比赛
                 List<SimilarMatch> similarMatches = similarMatchService.findSimilarMatch(matchId);
 
@@ -220,7 +247,7 @@ public class FootballAnalysisService {
                 .build();
     }
 
-    public void analyzeAndNotify(String aiInfo) throws IOException {
+    public void analyzeAndNotify(String aiInfo) {
         List<SubMatchInfo> currentDateMatch = matchInfoService.findCurrentDateMatch();
 
         List<List<SubMatchInfo>> lists = splitIntoBatches2(currentDateMatch, 3);
@@ -233,7 +260,6 @@ public class FootballAnalysisService {
 
                 log.info("共分析 {} 场比赛，将分为 {} 批发送",
                         analyses.size(), batches.size());
-
                 // 发送每个批次
                 for (int i = 0; i < batches.size(); i++) {
                     List<MatchAnalysis> batch = batches.get(i);

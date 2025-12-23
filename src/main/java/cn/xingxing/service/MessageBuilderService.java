@@ -20,6 +20,26 @@ public class MessageBuilderService {
         return toJson(message);
     }
 
+
+    public String buildFeishuMessage2() {
+        FeishuMessage message = FeishuMessage.builder()
+                .msgType("interactive")
+                .card(buildCard2())
+                .build();
+
+        return toJson(message);
+    }
+    private FeishuMessage.Card buildCard2() {
+        List<Object> elements = new ArrayList<>();
+
+        // 添加说明
+        elements.add(createTextElement("---------------------" + new Date()));
+        elements.add(createDivider());
+        elements.add(createTextElement("---------------------"));
+        return FeishuMessage.Card.builder()
+                .elements(elements)
+                .build();
+    }
     private FeishuMessage.Card buildCard(List<MatchAnalysis> analyses, boolean includeAi) {
         List<Object> elements = new ArrayList<>();
 

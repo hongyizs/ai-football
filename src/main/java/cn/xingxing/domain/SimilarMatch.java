@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @TableName("similar_match")
 public class SimilarMatch extends BaseEntity {
     @TableId
-    private Integer  id;
+    private String  id;
     private String matchId;
     private String homeTeam;
     private String awayTeam;
