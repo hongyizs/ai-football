@@ -1,24 +1,17 @@
-package cn.xingxing.domain;
+package cn.xingxing.vo;
 
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
 /**
  * @Author: yangyuanliang
- * @Date: 2025-12-23
+ * @Date: 2025-12-24
  * @Version: 1.0
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("ai_analysis_result")
-public class AiAnalysisResult extends BaseEntity {
-    @TableId(type = IdType.ASSIGN_ID)
+public class AiAnalysisResultVo {
     private String id;
     private String matchId;
     private String homeTeam;
@@ -30,5 +23,4 @@ public class AiAnalysisResult extends BaseEntity {
     private String aiAnalysis;
     private String matchResult;
     private String afterMatchAnalysis;
-    private LocalDateTime createTime;
 }

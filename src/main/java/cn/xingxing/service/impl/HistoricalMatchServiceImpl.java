@@ -1,6 +1,7 @@
-package cn.xingxing.service;
+package cn.xingxing.service.impl;
 
 
+import cn.xingxing.service.HistoricalMatchService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.xingxing.data.DataService;
 import cn.xingxing.domain.HistoricalMatch;

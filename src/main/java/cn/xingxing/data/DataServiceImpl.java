@@ -11,6 +11,7 @@ import cn.xingxing.dto.url5.MatchInfo5;
 import cn.xingxing.mapper.*;
 import cn.xingxing.service.AIService;
 import cn.xingxing.util.HttpClientUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -154,6 +155,13 @@ public class DataServiceImpl implements DataService {
                 }
             });
             aiAnalysisResultMapper.updateById(aiAnalysisResults);
+
+            List<Integer> list = matchResult.stream().map(SubMatchInfo::getMatchId).toList();
+            LambdaUpdateWrapper<SubMatchInfo> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(SubMatchInfo::getMatchId, list);
+            updateWrapper.set(SubMatchInfo::getMatchStatus,"3");
+            updateWrapper.set(SubMatchInfo::getMatchStatusName,"已完成");
+            matchInfoMapper.update(updateWrapper);
         }
         return 0;
     }

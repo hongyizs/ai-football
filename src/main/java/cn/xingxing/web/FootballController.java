@@ -1,12 +1,19 @@
 package cn.xingxing.web;
 
+import cn.xingxing.domain.SubMatchInfo;
 import cn.xingxing.dto.ApiResponse;
 import cn.xingxing.service.FootballAnalysisService;
+import cn.xingxing.service.MatchInfoService;
+import cn.xingxing.vo.MatchInfoVo;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -20,10 +27,14 @@ public class FootballController {
     @Autowired
     private ExecutorService footballExecutor;
 
+
+    @Autowired
+    private MatchInfoService matchInfoService;
+
     /**
      * 定时分析任务（每4小时执行一次）
      */
-    //@Scheduled(initialDelayString = "${football.api.schedule-initial-delay:10000}", fixedDelayString = "${football.api.schedule-fixed-delay:14400000}")
+   // @Scheduled(initialDelayString = "${football.api.schedule-initial-delay:10000}", fixedDelayString = "${football.api.schedule-fixed-delay:14400000}")
     public void scheduledAnalysis() {
         log.info("定时分析任务启动");
 
@@ -63,4 +74,21 @@ public class FootballController {
     public ApiResponse<String> healthCheck() {
         return ApiResponse.success("服务运行正常");
     }
+
+    @GetMapping("/list")
+    public ApiResponse<List<MatchInfoVo>> listMatchInfo() {
+        List<MatchInfoVo> matchInfoVos = new ArrayList<>();
+        List<SubMatchInfo> currentDateMatch = matchInfoService.findCurrentDateMatch();
+        if(!CollectionUtils.isEmpty(currentDateMatch)) {
+            matchInfoVos = JSONObject.parseArray(JSONObject.toJSONString(currentDateMatch),MatchInfoVo.class);
+        }
+        return ApiResponse.success(matchInfoVos);
+    }
+
+
+    @PostMapping("/analysis/{matchId}")
+    public ApiResponse<String> analysisByMatchId(@PathVariable String matchId) {
+        return ApiResponse.success(analysisService.analysisByMatchId(matchId));
+    }
+
 }

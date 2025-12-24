@@ -1,5 +1,6 @@
 package cn.xingxing.service;
 
+import cn.xingxing.vo.AiAnalysisResultVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import cn.xingxing.config.FootballApiConfig;
@@ -50,6 +51,9 @@ public class FootballAnalysisService {
 
     @Autowired
     private HadListService hadListService;
+
+    @Autowired
+    private AiAnalysisResultService aiAnalysisResultService;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -109,7 +113,12 @@ public class FootballAnalysisService {
             analysis.setMatchHistoryData(getMatchHistoryData(matchId));
             // AI分析
             if ("ai".equals(aiInfo)) {
-                analysis.setAiAnalysis(aiService.analyzeMatch(analysis));
+                AiAnalysisResultVo byMatchId = aiAnalysisResultService.findByMatchId(matchId);
+                if(byMatchId != null) {
+                    analysis.setAiAnalysis(byMatchId.getAiAnalysis());
+                }else{
+                    analysis.setAiAnalysis(aiService.analyzeMatch(analysis));
+                }
             }
 
             return analysis;
@@ -348,5 +357,12 @@ public class FootballAnalysisService {
             log.warn("添加结束标记失败，返回原始消息", e);
             return message;
         }
+    }
+
+    public String analysisByMatchId(String matchId) {
+        SubMatchInfo byId = matchInfoService.getById(matchId);
+        MatchAnalysis ai = analyzeSingleMatch(byId, "ai");
+        assert ai != null;
+        return ai.getAiAnalysis();
     }
 }

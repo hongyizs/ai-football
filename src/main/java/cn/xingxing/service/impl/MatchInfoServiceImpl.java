@@ -1,10 +1,12 @@
-package cn.xingxing.service;
+package cn.xingxing.service.impl;
 
 
+import cn.xingxing.service.MatchInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.xingxing.data.DataService;
 import cn.xingxing.domain.SubMatchInfo;
 import cn.xingxing.mapper.MatchInfoMapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class MatchInfoServiceImpl implements MatchInfoService {
+public class MatchInfoServiceImpl extends ServiceImpl<MatchInfoMapper,SubMatchInfo> implements MatchInfoService {
     @Autowired
     private MatchInfoMapper matchInfoMapper;
 
