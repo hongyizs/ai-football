@@ -31,4 +31,10 @@ public class MatchInfoVo {
     private String matchTime;
     private String sectionsNo1;
     private String sectionsNo999;
+    //ke
+    private String awayWin;
+    //ping
+    private String draw;
+    //zhu
+    private String homeWin;
 }

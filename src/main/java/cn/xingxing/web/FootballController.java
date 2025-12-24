@@ -1,8 +1,10 @@
 package cn.xingxing.web;
 
+import cn.xingxing.domain.HadList;
 import cn.xingxing.domain.SubMatchInfo;
 import cn.xingxing.dto.ApiResponse;
 import cn.xingxing.service.FootballAnalysisService;
+import cn.xingxing.service.HadListService;
 import cn.xingxing.service.MatchInfoService;
 import cn.xingxing.vo.MatchInfoVo;
 import com.alibaba.fastjson.JSONArray;
@@ -30,6 +32,9 @@ public class FootballController {
 
     @Autowired
     private MatchInfoService matchInfoService;
+
+    @Autowired
+    private HadListService hadListService;
 
     /**
      * 定时分析任务（每4小时执行一次）
@@ -81,6 +86,13 @@ public class FootballController {
         List<SubMatchInfo> currentDateMatch = matchInfoService.findCurrentDateMatch();
         if(!CollectionUtils.isEmpty(currentDateMatch)) {
             matchInfoVos = JSONObject.parseArray(JSONObject.toJSONString(currentDateMatch),MatchInfoVo.class);
+            matchInfoVos.forEach(matchInfoVo -> {
+                List<HadList> hadList = hadListService.findHadList(String.valueOf(matchInfoVo.getMatchId()));
+                HadList last = hadList.getLast();
+                matchInfoVo.setHomeWin(last.getH());
+                matchInfoVo.setAwayWin(last.getA());
+                matchInfoVo.setDraw(last.getD());
+            });
         }
         return ApiResponse.success(matchInfoVos);
     }
