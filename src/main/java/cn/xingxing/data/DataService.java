@@ -30,12 +30,24 @@ public interface DataService {
     */
    int loadSimilarMatch(Integer matchId);
 
-
+   /**
+    * 获取比赛结果
+    * @param matchId
+    * @return
+    */
    int loadMatchResult(Integer matchId);
 
-
+   /**
+    * 赛后复盘
+    * @param matchId
+    * @return
+    */
    int afterMatchAnalysis(Integer matchId);
 
-   int loadTeamStats(Integer matchId);
+   /**
+    * 获取xg数据
+    * @return
+    */
+   int loadTeamStats();
 
 }

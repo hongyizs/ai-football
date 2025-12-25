@@ -1,6 +1,8 @@
 package cn.xingxing;
 
 import cn.xingxing.data.DataService;
+import cn.xingxing.domain.TeamStats;
+import cn.xingxing.service.TeamStatsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,6 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 class DemoApplicationTests {
 	@Autowired
 	private DataService dataService;
+
+	@Autowired
+	private TeamStatsService teamStatsService;
 	@Test
 	void contextLoads() {
 		dataService.loadMatchInfoData();
@@ -47,6 +52,12 @@ class DemoApplicationTests {
 
 	@Test
 	void contextLoads7() {
-		dataService.loadTeamStats(0);
+		dataService.loadTeamStats();
+	}
+
+	@Test
+	void contextLoads8() {
+		TeamStats teamStats = teamStatsService.selectByTeamName("阿森纳");
+		System.out.println(teamStats);
 	}
 }

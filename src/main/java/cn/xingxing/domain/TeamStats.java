@@ -1,6 +1,7 @@
 package cn.xingxing.domain;
 
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class TeamStats {
     private Integer number; // 排名
 
     private String team; // 球队名称
+    @TableField("team_name")
     private String teamName; // 球队名称
 
     private Integer matches; // 比赛场次
@@ -34,18 +36,25 @@ public class TeamStats {
     private Integer points; // 积分
 
     // --- 以下为高级数据字段 ---
+    @TableField("xG")
     private Double xG; // 预期进球
+    @TableField("NPxG")
     private Double NPxG; // 非点球预期进球
+    @TableField("xGA")
     private Double xGA; // 预期失球
+    @TableField("NPxGA")
     private Double NPxGA; // 非点球预期失球
+    @TableField("NPxGD")
     private Double NPxGD; // 非点球预期净胜球
 
     private Double ppda; // 对方每防守动作允许的传球次数
+    @TableField("ppda_allowed")
     private Double ppdaAllowed; // 己方每防守动作允许的传球次数
 
     private Integer deep; // 进攻三区传球/触球次数
+    @TableField("deep_allowed")
     private Integer deepAllowed; // 被对手在进攻三区传球/触球次数
-
+    @TableField("xPTS")
     private Double xPTS; // 预期积分
 
     // 可以方便地计算净胜球

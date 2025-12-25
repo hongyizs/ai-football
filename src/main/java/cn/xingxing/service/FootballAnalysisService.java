@@ -55,6 +55,9 @@ public class FootballAnalysisService {
     @Autowired
     private AiAnalysisResultService aiAnalysisResultService;
 
+    @Autowired
+    private TeamStatsService teamStatsService;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -111,6 +114,9 @@ public class FootballAnalysisService {
             analysis.setMatchAnalysisData(getMatchAnalysisData(matchId));
             //近期比赛
             analysis.setMatchHistoryData(getMatchHistoryData(matchId));
+
+            analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName()));
+            analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName()));
             // AI分析
             if ("ai".equals(aiInfo)) {
                 AiAnalysisResultVo byMatchId = aiAnalysisResultService.findByMatchId(matchId);

@@ -55,7 +55,7 @@ public class DataServiceImpl implements DataService {
     private AIService aiService;
 
     @Autowired
-    private TeamStatsService  teamStatsService;
+    private TeamStatsService teamStatsService;
 
     @Override
     public int loadMatchInfoData() {
@@ -94,7 +94,7 @@ public class DataServiceImpl implements DataService {
         List<Integer> list = matchInfoMapper.selectList(queryWrapper).stream().map(SubMatchInfo::getMatchId).toList();
         list.forEach(id -> {
             List<HadList> hadList = getHadList(String.valueOf(id));
-            if(!CollectionUtils.isEmpty(hadList)) {
+            if (!CollectionUtils.isEmpty(hadList)) {
                 hadListMapperMapper.insertOrUpdate(hadList);
             }
         });
@@ -111,7 +111,7 @@ public class DataServiceImpl implements DataService {
         LambdaQueryWrapper<HadList> hadQuery = new LambdaQueryWrapper<>();
         hadQuery.in(HadList::getMatchId, list);
         List<HadList> hadLists = hadListMapperMapper.selectList(hadQuery);
-        if(!CollectionUtils.isEmpty(hadLists)) {
+        if (!CollectionUtils.isEmpty(hadLists)) {
             hadLists.forEach(hadList -> {
                 List<SimilarMatch> similarMatches = getSimilarMatches(hadList.getH(), hadList.getA(), hadList.getD(), hadList.getMatchId());
                 similarMatchMapper.insertOrUpdate(similarMatches);
@@ -132,7 +132,7 @@ public class DataServiceImpl implements DataService {
 
             if (!CollectionUtils.isEmpty(matchList)) {
                 return matchList.stream()
-                        .map(f->convertMatchItem(f,homeWin,awayWin,draw,matchId))
+                        .map(f -> convertMatchItem(f, homeWin, awayWin, draw, matchId))
                         .collect(Collectors.toList());
             }
         } catch (Exception e) {
@@ -146,15 +146,15 @@ public class DataServiceImpl implements DataService {
         LambdaQueryWrapper<AiAnalysisResult> queryWrapper = new LambdaQueryWrapper<>();
         LocalDate localDate = LocalDate.now();
 
-        queryWrapper.between(AiAnalysisResult::getMatchTime, localDate, localDate.plusDays(1));
+        queryWrapper.between(AiAnalysisResult::getMatchTime, localDate.minusDays(2), localDate.plusDays(1));
 
         List<AiAnalysisResult> aiAnalysisResults = aiAnalysisResultMapper.selectList(queryWrapper);
         List<String> matchIds = aiAnalysisResults.stream().map(AiAnalysisResult::getMatchId).toList();
         List<SubMatchInfo> matchResult = getMatchResult(matchIds);
-        if(!CollectionUtils.isEmpty(matchResult)) {
+        if (!CollectionUtils.isEmpty(matchResult)) {
             Map<Integer, String> collect = matchResult.stream().collect(Collectors.toMap(SubMatchInfo::getMatchId, SubMatchInfo::getSectionsNo999));
             aiAnalysisResults.forEach(result -> {
-                if(collect.containsKey(Integer.valueOf(result.getMatchId()))) {
+                if (collect.containsKey(Integer.valueOf(result.getMatchId()))) {
                     result.setMatchResult(collect.get(Integer.valueOf(result.getMatchId())));
                 }
             });
@@ -163,8 +163,8 @@ public class DataServiceImpl implements DataService {
             List<Integer> list = matchResult.stream().map(SubMatchInfo::getMatchId).toList();
             LambdaUpdateWrapper<SubMatchInfo> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.in(SubMatchInfo::getMatchId, list);
-            updateWrapper.set(SubMatchInfo::getMatchStatus,"3");
-            updateWrapper.set(SubMatchInfo::getMatchStatusName,"已完成");
+            updateWrapper.set(SubMatchInfo::getMatchStatus, "3");
+            updateWrapper.set(SubMatchInfo::getMatchStatusName, "已完成");
             matchInfoMapper.update(updateWrapper);
         }
         return 0;
@@ -177,12 +177,21 @@ public class DataServiceImpl implements DataService {
     }
 
     @Override
-    public int loadTeamStats(Integer matchId) {
-        teamStatsService.loadTeamStats(matchId);
+    public int loadTeamStats() {
+
+        List<String> list = new ArrayList<>();
+        list.add("EPL");//英超
+        list.add("La_liga");//西甲
+        list.add("Ligue_1");//法甲
+        list.add("Bundesliga");//德甲
+        list.add("Serie_A");//意甲
+        list.stream().forEach(f ->
+                teamStatsService.loadTeamStats(f));
+
         return 0;
     }
 
-    private List<SubMatchInfo> getMatchResult(List<String> matchIds ){
+    private List<SubMatchInfo> getMatchResult(List<String> matchIds) {
         List<SubMatchInfo> subMatchInfos = new ArrayList<>();
         String url = apiConfig.getMatchResultUrl();
         String response = HttpClientUtil.doGet(url, apiConfig.getHttpConnectTimeout());
@@ -191,13 +200,14 @@ public class DataServiceImpl implements DataService {
         List<MatchInfo> matchInfoList = value.getMatchInfoList();
         matchInfoList.forEach(info -> {
             info.getSubMatchList().forEach(subMatchInfo -> {
-                if(matchIds.contains(String.valueOf(subMatchInfo.getMatchId()))) {
+                if (matchIds.contains(String.valueOf(subMatchInfo.getMatchId()))) {
                     subMatchInfos.add(subMatchInfo);
                 }
             });
         });
         return subMatchInfos;
     }
+
     private List<SimilarMatch> getSimilarMatches(String homeWin, String awayWin, String draw, String matchId) {
         try {
             String url = String.format(apiConfig.getSearchOddsUrl(), homeWin, awayWin, draw);
@@ -208,7 +218,7 @@ public class DataServiceImpl implements DataService {
 
             if (!CollectionUtils.isEmpty(matchList)) {
                 return matchList.stream()
-                        .map(f->convertMatchItem(f,homeWin,awayWin,draw,matchId))
+                        .map(f -> convertMatchItem(f, homeWin, awayWin, draw, matchId))
                         .collect(Collectors.toList());
             }
         } catch (Exception e) {
@@ -218,10 +228,9 @@ public class DataServiceImpl implements DataService {
     }
 
 
-
     private SimilarMatch convertMatchItem(MatchItem item, String homeWin, String awayWin, String draw, String matchId) {
         return SimilarMatch.builder()
-                .id(matchId+"-"+homeWin+"-"+draw+"-"+awayWin)
+                .id(matchId + "-" + homeWin + "-" + draw + "-" + awayWin)
                 .homeTeam(item.getHomeTeamAbbName())
                 .matchId(String.valueOf(matchId))
                 .h(String.valueOf(homeWin))
@@ -241,9 +250,9 @@ public class DataServiceImpl implements DataService {
 
             MatchInfoResponse2 matchInfoResponse2 = JSONObject.parseObject(response, MatchInfoResponse2.class);
             List<HadList> hhadList = matchInfoResponse2.getValue().getOddsHistory().getHadList();
-            if(!CollectionUtils.isEmpty(hhadList)) {
+            if (!CollectionUtils.isEmpty(hhadList)) {
                 hhadList.stream().filter(Objects::nonNull).forEach(hadList1 -> {
-                    hadList1.setId(matchId+"-"+hadList1.getH()+"-"+hadList1.getA()+"-"+hadList1.getD());
+                    hadList1.setId(matchId + "-" + hadList1.getH() + "-" + hadList1.getA() + "-" + hadList1.getD());
                     hadList1.setMatchId(matchId);
                 });
             }
@@ -273,7 +282,7 @@ public class DataServiceImpl implements DataService {
 
                 if (matchInfo5 != null && !CollectionUtils.isEmpty(matchInfo5.getMatchList())) {
                     return matchInfo5.getMatchList().stream()
-                            .map(f->convertToHistoricalMatch(f,matchId))
+                            .map(f -> convertToHistoricalMatch(f, matchId))
                             .collect(Collectors.toList());
                 }
             }
@@ -283,7 +292,8 @@ public class DataServiceImpl implements DataService {
 
         return Collections.emptyList();
     }
-    private HistoricalMatch convertToHistoricalMatch(Match match,String matchId) {
+
+    private HistoricalMatch convertToHistoricalMatch(Match match, String matchId) {
         return HistoricalMatch.builder()
                 .homeTeam(match.getHomeTeamShortName())
                 .awayTeam(match.getAwayTeamShortName())
@@ -293,6 +303,7 @@ public class DataServiceImpl implements DataService {
                 .matchDate(match.getMatchDate())
                 .build();
     }
+
     private List<SubMatchInfo> filterValidMatches(List<MatchInfo> matchInfoList) {
         List<SubMatchInfo> validMatches = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -318,7 +329,6 @@ public class DataServiceImpl implements DataService {
 
         return validMatches;
     }
-
 
 
 }

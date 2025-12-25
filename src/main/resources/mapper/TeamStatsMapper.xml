@@ -2,45 +2,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.xingxing.mapper.TeamStatsMapper">
 
-    <!-- 结果映射：将数据库列名映射到Java属性名 -->
-    <resultMap id="baseResultMap" type="cn.xingxing.domain.TeamStats">
-        <id property="id" column="id"/>
-        <result property="number" column="team_number"/>
-        <result property="team" column="team"/>
-        <result property="teamName" column="team_name"/>
 
-        <result property="matches" column="matches_played"/>
-        <result property="wins" column="wins"/>
-        <result property="draws" column="draws"/>
-        <result property="loses" column="loses"/>
-        <result property="goals" column="goals"/>
-        <result property="ga" column="ga"/>
-        <result property="points" column="points"/>
 
-        <!-- 高级数据字段映射 -->
-        <result property="xG" column="xG"/>
-        <result property="NPxG" column="NPxG"/>
-        <result property="xGA" column="xGA"/>
-        <result property="NPxGA" column="NPxGA"/>
-        <result property="NPxGD" column="NPxGD"/>
-        <result property="ppda" column="ppda"/>
-        <result property="ppdaAllowed" column="ppda_allowed"/>
-        <result property="deep" column="deep_completions"/>
-        <result property="deepAllowed" column="deep_allowed"/>
-        <result property="xPTS" column="xPTS"/>
-    </resultMap>
-
-    <insert id="insertBatch">
-        INSERT INTO team_stats
-        (number, team,team_name, matches, wins, draws, loses, goals, ga, points,
-        xG, NPxG, xGA, NPxGA, NPxGD, ppda, ppda_allowed,
-        deep, deep_allowed, xPTS)
-        VALUES
-        <foreach collection="list" item="team" separator=",">
-            (#{team.number}, #{team.team},#{team.teamName}, #{team.matches}, #{team.wins}, #{team.draws},
-            #{team.loses}, #{team.goals}, #{team.ga}, #{team.points},
-            #{team.xG}, #{team.NPxG}, #{team.xGA}, #{team.NPxGA}, #{team.NPxGD},
-            #{team.ppda}, #{team.ppdaAllowed}, #{team.deep}, #{team.deepAllowed}, #{team.xPTS})
-        </foreach>
-    </insert>
 </mapper>
