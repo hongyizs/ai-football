@@ -43,4 +43,10 @@ class DemoApplicationTests {
 	void contextLoads6() {
 		dataService.afterMatchAnalysis(0);
 	}
+
+
+	@Test
+	void contextLoads7() {
+		dataService.loadTeamStats(0);
+	}
 }

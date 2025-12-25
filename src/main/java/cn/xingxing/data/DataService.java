@@ -36,4 +36,6 @@ public interface DataService {
 
    int afterMatchAnalysis(Integer matchId);
 
+   int loadTeamStats(Integer matchId);
+
 }

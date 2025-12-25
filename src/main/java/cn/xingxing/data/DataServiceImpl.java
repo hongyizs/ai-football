@@ -1,6 +1,7 @@
 package cn.xingxing.data;
 
 
+import cn.xingxing.service.TeamStatsService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.xingxing.config.FootballApiConfig;
@@ -52,6 +53,9 @@ public class DataServiceImpl implements DataService {
 
     @Autowired
     private AIService aiService;
+
+    @Autowired
+    private TeamStatsService  teamStatsService;
 
     @Override
     public int loadMatchInfoData() {
@@ -169,6 +173,12 @@ public class DataServiceImpl implements DataService {
     @Override
     public int afterMatchAnalysis(Integer matchId) {
         aiService.afterMatchAnalysis();
+        return 0;
+    }
+
+    @Override
+    public int loadTeamStats(Integer matchId) {
+        teamStatsService.loadTeamStats(matchId);
         return 0;
     }
 
