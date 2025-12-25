@@ -23,7 +23,10 @@ public class AiAnalysisResultServiceImpl  extends ServiceImpl<AiAnalysisResultMa
         LambdaQueryWrapper<AiAnalysisResult> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(AiAnalysisResult::getMatchId,matchId);
         AiAnalysisResult aiAnalysisResult = baseMapper.selectOne(queryWrapper);
-        BeanUtils.copyProperties(aiAnalysisResult,aiAnalysisResultVo);
-        return aiAnalysisResultVo;
+        if(aiAnalysisResult!=null){
+            BeanUtils.copyProperties(aiAnalysisResult,aiAnalysisResultVo);
+            return aiAnalysisResultVo;
+        }
+        return null;
     }
 }

@@ -29,4 +29,18 @@ public class HadList extends BaseEntity {
      //       "goalLine": "+3"
     // Define fields corresponding to each key-value pair in the "hhadList" array
     // You can add these fields similar to the other classes above
+
+    @Override
+    public String toString() {
+        return "HadList{" +
+                "客队赔率='" + a + '\'' +
+                ", 平局赔率='" + d + '\'' +
+                ", 主队赔率='" + h + '\'' +
+                ", hf='" + hf + '\'' +
+                ", goalLine='" + goalLine + '\'' +
+                ", matchId='" + matchId + '\'' +
+                ", updateDate='" + updateDate + '\'' +
+                ", updateTime='" + updateTime + '\'' +
+                '}';
+    }
 }

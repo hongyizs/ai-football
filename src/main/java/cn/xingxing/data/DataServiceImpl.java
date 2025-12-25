@@ -77,7 +77,10 @@ public class DataServiceImpl implements DataService {
         LocalDate localDate = LocalDate.now();
 
         queryWrapper.between(SubMatchInfo::getMatchDate, localDate, localDate.plusDays(1));
-        List<Integer> list = matchInfoMapper.selectList(queryWrapper).stream().map(SubMatchInfo::getMatchId).toList();
+        List<Integer> list = new ArrayList<>(matchInfoMapper.selectList(queryWrapper).stream().map(SubMatchInfo::getMatchId).toList());
+        if(matchId != null ){
+            list.add(matchId);
+        }
         list.forEach(id -> {
             List<HistoricalMatch> recentMatches = getRecentMatches(String.valueOf(id));
             historicalMatchMapper.insertOrUpdate(recentMatches);
@@ -91,7 +94,11 @@ public class DataServiceImpl implements DataService {
         LocalDate localDate = LocalDate.now();
 
         queryWrapper.between(SubMatchInfo::getMatchDate, localDate, localDate.plusDays(1));
-        List<Integer> list = matchInfoMapper.selectList(queryWrapper).stream().map(SubMatchInfo::getMatchId).toList();
+
+        List<Integer> list = new ArrayList<>(matchInfoMapper.selectList(queryWrapper).stream().map(SubMatchInfo::getMatchId).toList());
+        if(matchId != null ){
+            list.add(matchId);
+        }
         list.forEach(id -> {
             List<HadList> hadList = getHadList(String.valueOf(id));
             if (!CollectionUtils.isEmpty(hadList)) {

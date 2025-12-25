@@ -49,28 +49,46 @@ public class AIService {
                         比赛基本信息：
                         - 联赛：%s
                         - 比赛时间：%s    
-                        赔率数据：
-                        %s      
+                        最新赔率数据：
+                        主队：%s 平局：%s 客队：%s  
+                        同赔率比赛结果
+                        %s    
                         近期交锋：
                         %s
-                        比赛近况
+                        主队近期状态与质量
                         %s
-                        比赛特征
+                        客队近期状态与质量
+                        %s
+                        比赛战术与数据特征
+                        %s
+                        赔率变化数据
+                        %s
+                        主队xG数据
+                        %s
+                        客队xG数据
                         %s    
                         请从以下维度进行综合分析：
                         1. **赔率分析**：解读当前赔率反映的市场预期和胜负概率分布
                         2. **基本面分析**：基于历史交锋记录分析两队战术风格、心理优势和近期状态
                         3. **多因素分析**：基于近期比赛特征、比赛近况分析
+                        4. **xG数据分析** 基于xG数据分析(如果有)
                         4. **进球预期**：结合两队攻防特点预测可能的进球数范围  
-                        权重比例：赔率0.4 基本面0.3 多因素0.3     
-                        请给出最多三个场景最可能的比分预测。
+                        权重比例：赔率分析0.25 基本面0.25 多因素0.2 xG数据分析0.3     
+                        请给出最多三个场景的比分预测以及“信心级别”和“关键风险提示”。
                         """,
                 analysis.getHomeTeam(), analysis.getAwayTeam(),
                 analysis.getLeague(), analysis.getMatchTime(),
+                analysis.getOddsHistory().getFirst().getHomeWin(),
+                analysis.getOddsHistory().getFirst().getDraw(),
+                analysis.getOddsHistory().getFirst().getAwayWin(),
                 analysis.getOddsHistory(),
                 analysis.getRecentMatches(),
-                analysis.getMatchHistoryData(),
-                analysis.getMatchAnalysisData()
+                analysis.getMatchHistoryData().getHome(),
+                analysis.getMatchHistoryData().getAway(),
+                analysis.getMatchAnalysisData(),
+                analysis.getHadLists(),
+                analysis.getHomeTeamStats(),
+                analysis.getAwayTeamStats()
         );
     }
 
@@ -85,8 +103,9 @@ public class AIService {
             String chat = assistant.chatV2(prompt);
             log.info("afterMatchAnalysis {}", chat);
             result.setAfterMatchAnalysis(chat);
+            aiAnalysisResultMapper.updateById(result);
         });
-        aiAnalysisResultMapper.updateById(aiAnalysisResults);
+       // aiAnalysisResultMapper.updateById(aiAnalysisResults);
         return "";
     }
 

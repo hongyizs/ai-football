@@ -1,5 +1,6 @@
 package cn.xingxing.dto;
 
+import cn.xingxing.domain.HadList;
 import cn.xingxing.domain.HistoricalMatch;
 import cn.xingxing.domain.TeamStats;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class MatchAnalysis {
     private String aiAnalysis;
     private TeamStats homeTeamStats;
     private TeamStats awayTeamStats;
+    private List<HadList> hadLists;
 
 }
 

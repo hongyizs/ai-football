@@ -114,7 +114,7 @@ public class FootballAnalysisService {
             analysis.setMatchAnalysisData(getMatchAnalysisData(matchId));
             //近期比赛
             analysis.setMatchHistoryData(getMatchHistoryData(matchId));
-
+            analysis.setHadLists(hadListService.findHadList(matchId));
             analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName()));
             analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName()));
             // AI分析
