@@ -1,13 +1,10 @@
 package cn.xingxing.service;
 
+import cn.xingxing.domain.*;
 import cn.xingxing.vo.AiAnalysisResultVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import cn.xingxing.config.FootballApiConfig;
-import cn.xingxing.domain.HadList;
-import cn.xingxing.domain.HistoricalMatch;
-import cn.xingxing.domain.SimilarMatch;
-import cn.xingxing.domain.SubMatchInfo;
 import cn.xingxing.dto.*;
 import cn.xingxing.dto.url5.Match;
 import cn.xingxing.dto.url5.MatchInfo5;
@@ -57,6 +54,9 @@ public class FootballAnalysisService {
 
     @Autowired
     private TeamStatsService teamStatsService;
+
+    @Autowired
+    private InformationService informationService;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -117,6 +117,11 @@ public class FootballAnalysisService {
             analysis.setHadLists(hadListService.findHadList(matchId));
             analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName()));
             analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName()));
+            Information byId = informationService.getById(matchId);
+            if(byId!=null){
+                analysis.setInformation(byId.getInfo());
+
+            }
             // AI分析
             if ("ai".equals(aiInfo)) {
                 AiAnalysisResultVo byMatchId = aiAnalysisResultService.findByMatchId(matchId);

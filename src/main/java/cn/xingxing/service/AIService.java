@@ -66,6 +66,8 @@ public class AIService {
                         主队xG数据
                         %s
                         客队xG数据
+                        %s
+                        最新情报
                         %s    
                         请从以下维度进行综合分析：
                         1. **赔率分析**：解读当前赔率反映的市场预期和胜负概率分布
@@ -88,7 +90,8 @@ public class AIService {
                 analysis.getMatchAnalysisData(),
                 analysis.getHadLists(),
                 analysis.getHomeTeamStats(),
-                analysis.getAwayTeamStats()
+                analysis.getAwayTeamStats(),
+                analysis.getInformation()
         );
     }
 

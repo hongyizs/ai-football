@@ -29,6 +29,7 @@ public class MatchAnalysis {
     private TeamStats homeTeamStats;
     private TeamStats awayTeamStats;
     private List<HadList> hadLists;
+    private String information;
 
 }
 
