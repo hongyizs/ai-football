@@ -29,4 +29,16 @@ public class SubMatchInfo extends BaseEntity {
     private String matchTime;
     private String sectionsNo1;
     private String sectionsNo999;
+    //ke
+    private String awayWin;
+    //ping
+    private String draw;
+    //zhu
+    private String homeWin;
+    //让
+    private String hhomeWin;
+    private String hawayWin;
+    private String hdraw;
+    private String goalLine;
+    private Boolean isSingleMatch;
 }

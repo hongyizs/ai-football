@@ -37,4 +37,10 @@ public class MatchInfoVo {
     private String draw;
     //zhu
     private String homeWin;
+    //让
+    private String hhomeWin;
+    private String hawayWin;
+    private String hdraw;
+    private String goalLine;
+    private Boolean isSingleMatch =false;
 }

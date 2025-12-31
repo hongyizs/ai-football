@@ -22,6 +22,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +70,8 @@ public class DataServiceImpl implements DataService {
         List<MatchInfo> matchInfoList = matchInfoResponse.getValue().getMatchInfoList();
         List<SubMatchInfo> validMatches = filterValidMatches(matchInfoList);
         matchInfoMapper.insertOrUpdate(validMatches);
+        this.syncHadListData();
+
         return 0;
     }
 
@@ -91,14 +95,50 @@ public class DataServiceImpl implements DataService {
 
     @Override
     public int syncHadListData() {
-        List<Integer> list = new ArrayList<>(matchInfoMapper.selectList(buildMatchInfoQuery()).stream().map(SubMatchInfo::getMatchId).toList());
-        list.forEach(id -> {
-            List<HadList> hadList = getHadList(String.valueOf(id));
-            if (!CollectionUtils.isEmpty(hadList)) {
-                hadListMapperMapper.insertOrUpdate(hadList);
+        List<SubMatchInfo> subMatchInfos = matchInfoMapper.selectList(buildMatchInfoQuery());
+        subMatchInfos.forEach(matchInfo -> {
+            int matchId = matchInfo.getMatchId();
+            OddsHistory oddsHistory = getOddsInfo(String.valueOf(matchId));
+            if (oddsHistory != null) {
+                List<HadList> hadList = oddsHistory.getHadList();
+                if (!CollectionUtils.isEmpty(hadList)) {
+                    hadList.stream().filter(Objects::nonNull).forEach(hList -> {
+                        hList.setId((matchId + hList.getUpdateDate() + hList.getUpdateTime()).replace("-", ""));
+                        hList.setMatchId(String.valueOf(matchId));
+                    });
+                    hadListMapperMapper.insertOrUpdate(hadList);
+                    HadList last = hadList.getLast();
+                    matchInfo.setHomeWin(last.getH());
+                    matchInfo.setAwayWin(last.getA());
+                    matchInfo.setDraw(last.getD());
+                    matchInfo.setIsSingleMatch(isSingleMatch(oddsHistory.getSingleList()));
+                    matchInfoMapper.updateById(matchInfo);
+                }
+
+                List<HadList> hhadList = oddsHistory.getHhadList();
+                if (!CollectionUtils.isEmpty(hhadList)) {
+                    hhadList.stream().filter(Objects::nonNull).forEach(hhList -> {
+                        hhList.setId((matchId + hhList.getUpdateDate() + hhList.getUpdateTime() + hhList.getGoalLine()).replace("-", ""));
+                        hhList.setMatchId(String.valueOf(matchId));
+                    });
+                    hadListMapperMapper.insertOrUpdate(hhadList);
+
+                    HadList last = hhadList.getLast();
+                    matchInfo.setHhomeWin(last.getH());
+                    matchInfo.setHawayWin(last.getA());
+                    matchInfo.setHdraw(last.getD());
+                    matchInfo.setGoalLine(last.getGoalLine());
+                    matchInfoMapper.updateById(matchInfo);
+                }
             }
+
+
         });
         return 0;
+    }
+
+    private Boolean isSingleMatch(List<SingleList> singleList) {
+        return !singleList.stream().filter(list -> list.getPoolCode().equals("HAD") && 1 == list.getSingle()).findFirst().isEmpty();
     }
 
     @Override
@@ -183,9 +223,14 @@ public class DataServiceImpl implements DataService {
 
     @Override
     public void syncHadListByMatchId(String matchId) {
-        List<HadList> hadList = getHadList(matchId);
-        if (!CollectionUtils.isEmpty(hadList)) {
-            hadListMapperMapper.insertOrUpdate(hadList);
+        OddsHistory oddsInfo = getOddsInfo(matchId);
+
+        if (oddsInfo != null && !CollectionUtils.isEmpty(oddsInfo.getHadList())) {
+            hadListMapperMapper.insertOrUpdate((oddsInfo.getHadList()));
+        }
+
+        if (oddsInfo != null && !CollectionUtils.isEmpty(oddsInfo.getHhadList())) {
+            hadListMapperMapper.insertOrUpdate((oddsInfo.getHhadList()));
         }
     }
 
@@ -233,26 +278,17 @@ public class DataServiceImpl implements DataService {
     }
 
 
-    private List<HadList> getHadList(String matchId) {
+    private OddsHistory getOddsInfo(String matchId) {
         try {
             String url = apiConfig.getFixedBonusUrl() + matchId;
             String response = HttpClientUtil.doGet(url, apiConfig.getHttpConnectTimeout());
 
             MatchInfoResponse2 matchInfoResponse2 = JSONObject.parseObject(response, MatchInfoResponse2.class);
-            List<HadList> hhadList = matchInfoResponse2.getValue().getOddsHistory().getHadList();
-            if (!CollectionUtils.isEmpty(hhadList)) {
-                hhadList.stream().filter(Objects::nonNull).forEach(hadList1 -> {
-                    hadList1.setId(matchId + "-" + hadList1.getH() + "-" + hadList1.getA() + "-" + hadList1.getD());
-                    hadList1.setMatchId(matchId);
-                });
-            }
-
-            return hhadList;
+            return matchInfoResponse2.getValue().getOddsHistory();
         } catch (Exception e) {
             log.error("获取赔率历史失败: {}", matchId, e);
         }
-
-        return Collections.emptyList();
+        return null;
     }
 
 
