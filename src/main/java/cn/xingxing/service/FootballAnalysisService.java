@@ -124,8 +124,8 @@ public class FootballAnalysisService {
             //近期比赛
             analysis.setMatchHistoryData(getMatchHistoryData(matchId));
             analysis.setHadLists(hadListService.findHadList(matchId));
-            analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName()));
-            analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName()));
+            analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName(),"home"));
+            analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName(),"away"));
             Information byId = informationService.getById(matchId);
             if(byId!=null){
                 analysis.setInformation(byId.getInfo());

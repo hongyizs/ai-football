@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -22,6 +24,11 @@ public class AIService {
 
     @Autowired
     private AiAnalysisResultMapper aiAnalysisResultMapper;
+
+    Pattern win = Pattern.compile("【([^】]+)】");
+    Pattern score = Pattern.compile("\\{([^}]+)\\}");
+
+
 
     public String analyzeMatch(MatchAnalysis analysis) {
         String prompt = buildAnalysisPrompt(analysis);
@@ -38,10 +45,24 @@ public class AIService {
             aiAnalysisResult.setHomeWin(String.valueOf(analysis.getOddsHistory().getFirst().getHomeWin()));
         }
         aiAnalysisResult.setAiAnalysis(chat);
+        System.out.println(chat);
+        Matcher matcher = score.matcher(chat);
+        if(matcher.find()){
+            System.out.println("ai比分---"+ matcher.group(1));
+            aiAnalysisResult.setAiScore(matcher.group(1).replace("{","").replace("}",""));
+        }
+        Matcher matcher2 = win.matcher(chat);
+        if(matcher2.find()){
+            System.out.println("ai胜负---"+ matcher2.group(1));
+            aiAnalysisResult.setAiResult(matcher2.group(1).replace("【","").replace("】",""));
+
+        }
         aiAnalysisResultMapper.insert(aiAnalysisResult);
         log.info("比赛分析结果： {}", chat);
         return chat;
     }
+
+
 
     private String buildAnalysisPrompt(MatchAnalysis analysis) {
         return String.format("""
@@ -63,9 +84,9 @@ public class AIService {
                         %s
                         赔率变化数据
                         %s
-                        主队xG数据
+                        主队主场xG数据
                         %s
-                        客队xG数据
+                        客队客场xG数据
                         %s
                         最新情报
                         %s    
@@ -76,7 +97,7 @@ public class AIService {
                         4. **xG数据分析** 基于xG数据分析(如果有)
                         4. **进球预期**：结合两队攻防特点预测可能的进球数范围  
                         根据本次比赛数据的特点（例如，是否有突出的xG数据、交锋记录是否久远、赔率变动是否剧烈），动态调整各分析维度的权重，并说明理由。     
-                        请给出最多三个场景的比分预测以及“概率”和“关键风险提示”.
+                        请给出1个比分推荐，以及胜平负推荐使用(主胜、平局、客胜表示)，比分结果使用{}修饰，胜负推荐使用【】修饰”.
                         """,
                 analysis.getHomeTeam(), analysis.getAwayTeam(),
                 analysis.getLeague(), analysis.getMatchTime(),

@@ -18,12 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -214,6 +210,37 @@ public class DataServiceImpl implements DataService {
         list.add("Serie_A");//意甲
         list.stream().forEach(f ->
                 teamStatsService.loadTeamStats(f));
+
+        return 0;
+    }
+
+
+    @Override
+    public int loadTeamStatsHome() {
+
+        List<String> list = new ArrayList<>();
+        list.add("EPL_home");//英超
+        list.add("La_liga_home");//西甲
+        list.add("Ligue_1_home");//法甲
+        list.add("Bundesliga_home");//德甲
+        list.add("Serie_A_home");//意甲
+        list.stream().forEach(f ->
+                teamStatsService.loadTeamStatsHome(f));
+
+        return 0;
+    }
+
+    @Override
+    public int loadTeamStatsAway() {
+
+        List<String> list = new ArrayList<>();
+        list.add("EPL_away");//英超
+        list.add("La_liga_away");//西甲
+        list.add("Ligue_1_away");//法甲
+        list.add("Bundesliga_away");//德甲
+        list.add("Serie_A_away");//意甲
+        list.stream().forEach(f ->
+                teamStatsService.loadTeamStatsAway(f));
 
         return 0;
     }

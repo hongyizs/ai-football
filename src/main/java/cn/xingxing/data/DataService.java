@@ -49,5 +49,9 @@ public interface DataService {
     */
    int loadTeamStats();
 
+   int loadTeamStatsHome();
+
+   int loadTeamStatsAway();
+
    void syncHadListByMatchId(String matchId);
 }

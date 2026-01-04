@@ -22,6 +22,8 @@ public class AiAnalysisResultVo {
     private String awayWin;
     private String aiAnalysis;
     private String matchResult;
+    private String aiScore;
+    private String aiResult;
     private String afterMatchAnalysis;
     private LocalDateTime createTime;
 

@@ -64,19 +64,21 @@ class DemoApplicationTests {
 	@Test
 	void contextLoads7() {
 		dataService.loadTeamStats();
+		dataService.loadTeamStatsHome();
+		dataService.loadTeamStatsAway();
 	}
 
 	@Test
 	void contextLoads8() {
-		TeamStats teamStats = teamStatsService.selectByTeamName("阿森纳");
+		TeamStats teamStats = teamStatsService.selectByTeamName("阿森纳","all");
 		System.out.println(teamStats);
 	}
 
 
 	@Test
 	void contextLoads9() {
-		MatchAnalysis matchAnalysis = analysisService.analysisByMatchId("2036380");
+		MatchAnalysis matchAnalysis = analysisService.analysisByMatchId("2036631");
 		System.out.println(matchAnalysis.getAiAnalysis());
-		notifyService.sendMsg(List.of(matchAnalysis));
+	//	notifyService.sendMsg(List.of(matchAnalysis));
 	}
 }

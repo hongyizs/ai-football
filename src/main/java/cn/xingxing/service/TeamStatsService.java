@@ -10,8 +10,11 @@ import cn.xingxing.domain.TeamStats;
 public interface TeamStatsService {
     void loadTeamStats(String name);
 
-    TeamStats selectByTeamName(String teamName);
+    TeamStats selectByTeamName(String teamName,String flag);
 
-    TeamStats selectByTeam(String team);
+    TeamStats selectByTeam(String team,String flag);
 
+    void loadTeamStatsHome(String f);
+
+    void loadTeamStatsAway(String f);
 }

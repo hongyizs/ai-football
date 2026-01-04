@@ -19,7 +19,7 @@ public class TeamStats {
     @TableId
     private Long id; // 数据库自增主键
 
-
+    private String flag; //all home away
     private Integer number; // 排名
 
     private String team; // 球队名称

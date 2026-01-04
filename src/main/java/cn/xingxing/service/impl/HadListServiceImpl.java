@@ -30,6 +30,7 @@ public class HadListServiceImpl implements HadListService {
     public List<HadList> findHadList(String matchId) {
         LambdaQueryWrapper<HadList> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(HadList::getMatchId, matchId);
+        queryWrapper.eq(HadList::getGoalLine,"");
         List<HadList> hadLists = hadListMapperMapper.selectList(queryWrapper);
         if (hadLists.isEmpty()) {
             dataService.syncHadListByMatchId(matchId);

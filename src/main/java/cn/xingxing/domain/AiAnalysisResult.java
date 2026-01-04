@@ -28,6 +28,8 @@ public class AiAnalysisResult extends BaseEntity {
     private String draw;
     private String awayWin;
     private String aiAnalysis;
+    private String aiScore;
+    private String aiResult;
     private String matchResult;
     private String afterMatchAnalysis;
     private LocalDateTime createTime;
