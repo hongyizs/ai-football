@@ -1,5 +1,6 @@
 package cn.xingxing.web;
 
+import cn.xingxing.data.DataService;
 import cn.xingxing.domain.HadList;
 import cn.xingxing.domain.SubMatchInfo;
 import cn.xingxing.dto.AnalysisResultDto;
@@ -36,7 +37,7 @@ public class FootballController {
     private MatchInfoService matchInfoService;
 
     @Autowired
-    private HadListService hadListService;
+    private DataService dataService;
 
     /**
      * 定时分析任务（每4小时执行一次）
@@ -54,24 +55,21 @@ public class FootballController {
         });
     }
 
-    /**
-     * 手动触发分析
-     */
-    @PostMapping("/analyze/{aiFlag}")
-    public ApiResponse<String> triggerAnalysis(@PathVariable String aiFlag) {
-        log.info("手动触发分析，AI标志: {}", aiFlag);
 
-        footballExecutor.execute(() -> {
-            try {
-                analysisService.analyzeAndNotify(aiFlag);
-            } catch (Exception e) {
-                log.error("手动触发分析异常", e);
-            }
-        });
-
-        return ApiResponse.success("分析任务已启动");
+    @Scheduled(initialDelayString = "${football.api.schedule-initial-delay:100000}", fixedDelayString = "${football.api.schedule-fixed-delay:5400000}")
+    public void syncMatchInfoData() {
+        log.info("定时分析任务启动");
+        dataService.syncMatchInfoData();
+        dataService.syncMatchResult();
     }
 
+
+
+    @Scheduled(initialDelayString = "${football.api.schedule-initial-delay:100000}", fixedDelayString = "${football.api.schedule-fixed-delay:600000}")
+    public void syncNeedData() {
+        log.info("定时分析任务启动");
+        dataService.syncHadListData();
+    }
 
 
     /**
