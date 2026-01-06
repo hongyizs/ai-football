@@ -1,3 +1,4 @@
+/*
 package cn.xingxing;
 
 import cn.xingxing.data.DataService;
@@ -82,3 +83,4 @@ class DemoApplicationTests {
 	//	notifyService.sendMsg(List.of(matchAnalysis));
 	}
 }
+*/

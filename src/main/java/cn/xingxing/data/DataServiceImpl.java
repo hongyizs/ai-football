@@ -248,13 +248,21 @@ public class DataServiceImpl implements DataService {
     @Override
     public void syncHadListByMatchId(String matchId) {
         OddsHistory oddsInfo = getOddsInfo(matchId);
-
-        if (oddsInfo != null && !CollectionUtils.isEmpty(oddsInfo.getHadList())) {
-            hadListMapperMapper.insertOrUpdate((oddsInfo.getHadList()));
+        List<HadList> hadList = oddsInfo.getHadList();
+        if (!CollectionUtils.isEmpty(hadList)) {
+            hadList.stream().filter(Objects::nonNull).forEach(hList -> {
+                hList.setId((matchId + hList.getUpdateDate() + hList.getUpdateTime()).replace("-", ""));
+                hList.setMatchId(String.valueOf(matchId));
+            });
+            hadListMapperMapper.insertOrUpdate(hadList);
         }
-
-        if (oddsInfo != null && !CollectionUtils.isEmpty(oddsInfo.getHhadList())) {
-            hadListMapperMapper.insertOrUpdate((oddsInfo.getHhadList()));
+        List<HadList> hhadList = oddsInfo.getHhadList();
+        if (!CollectionUtils.isEmpty(hhadList)) {
+            hhadList.stream().filter(Objects::nonNull).forEach(hhList -> {
+                hhList.setId((matchId + hhList.getUpdateDate() + hhList.getUpdateTime() + hhList.getGoalLine()).replace("-", ""));
+                hhList.setMatchId(String.valueOf(matchId));
+            });
+            hadListMapperMapper.insertOrUpdate(hhadList);
         }
     }
 
