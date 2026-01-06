@@ -17,7 +17,7 @@ public class AiMessageRequest {
 
     @Data
     public static class Message {
-        private String message;
+        private String content;
         private String role;
     }
 }

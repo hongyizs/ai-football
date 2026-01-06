@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -294,5 +295,41 @@ public class FootballAnalysisService {
     public MatchAnalysis analysisByMatchId(String matchId) {
         SubMatchInfo byId = matchInfoService.getById(matchId);
         return analyzeSingleMatch(byId, "ai");
+    }
+
+    public Flux<String> analysisByMatchIdStream(String matchId) {
+        SubMatchInfo byId = matchInfoService.getById(matchId);
+        return analyzeSingleMatchStream(byId);
+    }
+
+    private Flux<String> analyzeSingleMatchStream(SubMatchInfo match) {
+        String matchId = String.valueOf(match.getMatchId());
+        AiAnalysisResultVo byMatchId = aiAnalysisResultService.findByMatchId(matchId);
+        // 构建分析对象
+        MatchAnalysis analysis = MatchAnalysis.builder()
+                .homeTeam(match.getHomeTeamAbbName())
+                .awayTeam(match.getAwayTeamAbbName())
+                .matchTime(parseMatchTime(match.getMatchDate(), match.getMatchTime()))
+                .league(match.getLeagueAbbName())
+                .matchId(matchId)
+                .build();
+
+        // 获取近期交锋记录
+        analysis.setRecentMatches(historicalMatchService.findHistoricalMatch(matchId));
+
+        // 获取赔率历史
+        analysis.setOddsHistory(getOddsHistory(matchId));
+        //特征数据
+        analysis.setMatchAnalysisData(getMatchAnalysisData(matchId));
+        //近期比赛
+        analysis.setMatchHistoryData(getMatchHistoryData(matchId));
+        analysis.setHadLists(hadListService.findHadList(matchId));
+        analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName(),"home"));
+        analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName(),"away"));
+        Information byId = informationService.getById(matchId);
+        if(byId!=null){
+            analysis.setInformation(byId.getInfo());
+        }
+        return aiService.analyzeMatchStream(analysis);
     }
 }

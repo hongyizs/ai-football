@@ -1,5 +1,6 @@
 package cn.xingxing.service;
 
+import cn.xingxing.ai.StreamingAssistant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.xingxing.ai.Assistant;
 import cn.xingxing.domain.AiAnalysisResult;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -21,6 +23,9 @@ public class AIService {
 
     @Autowired
     private Assistant assistant;
+
+    @Autowired
+    private StreamingAssistant  streamingAssistant;
 
     @Autowired
     private AiAnalysisResultMapper aiAnalysisResultMapper;
@@ -181,5 +186,10 @@ public class AIService {
                         请给出最多三个场景最可能的比分预测。
                 """;
         return ask;
+    }
+
+    public Flux<String> analyzeMatchStream(MatchAnalysis analysis) {
+        String s = this.buildAnalysisPrompt(analysis);
+        return streamingAssistant.chat(s);
     }
 }
