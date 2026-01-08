@@ -1,5 +1,6 @@
 package cn.xingxing.service;
 
+import cn.xingxing.domain.HadList;
 import cn.xingxing.dto.FeishuMessage;
 import cn.xingxing.dto.MatchAnalysis;
 import lombok.extern.slf4j.Slf4j;
@@ -94,12 +95,11 @@ public class MessageBuilderService {
             content.append("\n");
         }
 
-        if (analysis.getOddsHistory() != null && !analysis.getOddsHistory().isEmpty()) {
+        if (analysis.getHadLists() != null && !analysis.getHadLists().isEmpty()) {
             content.append("**最新赔率：**\n");
-            analysis.getOddsHistory().forEach(odds ->
-                    content.append(String.format("- 主胜: %.2f  平: %.2f  客胜: %.2f\n",
-                            odds.getHomeWin(), odds.getDraw(), odds.getAwayWin()))
-            );
+            HadList first = analysis.getHadLists().getFirst();
+            content.append(String.format("- 主胜: %.2f  平: %.2f  客胜: %.2f\n",
+                            first.getH(), first.getD(), first.getA()));
             content.append("\n");
         }
 
