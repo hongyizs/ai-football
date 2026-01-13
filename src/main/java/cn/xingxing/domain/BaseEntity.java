@@ -3,6 +3,8 @@ package cn.xingxing.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -12,7 +14,8 @@ import java.time.LocalDateTime;
  * @Date: 2025-12-22
  * @Version: 1.0
  */
-@Data
+@Setter
+@Getter
 public class BaseEntity implements Serializable {
 
     /**
@@ -25,6 +28,5 @@ public class BaseEntity implements Serializable {
      */
     @TableLogic
     private Integer deleted;
-
 
 }

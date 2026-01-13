@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @Author: yangyuanliang
@@ -13,7 +15,8 @@ import lombok.Data;
  *
  * https://understat.com/league/EPL/2025
  */
-@Data
+@Setter
+@Getter
 @TableName("team_stats")
 public class TeamStats {
     @TableId

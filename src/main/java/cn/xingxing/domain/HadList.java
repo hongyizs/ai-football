@@ -25,10 +25,6 @@ public class HadList extends BaseEntity {
     private String updateDate;
 
     private String updateTime;
-   // "hf": "1",
-     //       "goalLine": "+3"
-    // Define fields corresponding to each key-value pair in the "hhadList" array
-    // You can add these fields similar to the other classes above
 
     @Override
     public String toString() {

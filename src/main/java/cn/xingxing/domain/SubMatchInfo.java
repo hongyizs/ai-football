@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@EqualsAndHashCode(callSuper = false)
+@Setter
+@Getter
 @TableName("match_info")
 public class SubMatchInfo extends BaseEntity {
     @TableId
@@ -41,4 +43,5 @@ public class SubMatchInfo extends BaseEntity {
     private String hdraw;
     private String goalLine;
     private Boolean isSingleMatch;
+
 }

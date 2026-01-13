@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +16,8 @@ import java.time.LocalDateTime;
  * @Date: 2025-12-23
  * @Version: 1.0
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
+@Setter
+@Getter
 @TableName("ai_analysis_result")
 public class AiAnalysisResult extends BaseEntity {
     @TableId(type = IdType.ASSIGN_ID)
@@ -33,4 +35,5 @@ public class AiAnalysisResult extends BaseEntity {
     private String matchResult;
     private String afterMatchAnalysis;
     private LocalDateTime createTime;
+
 }
