@@ -12,7 +12,7 @@ import lombok.Setter;
 @TableName("match_info")
 public class SubMatchInfo extends BaseEntity {
     @TableId
-    private int matchId;
+    private Integer matchId;
     private String awayTeamAbbName;
     private String awayTeamAllName;
     private String awayTeamId;
@@ -24,7 +24,7 @@ public class SubMatchInfo extends BaseEntity {
     private String leagueAllName;
     private String leagueId;
     private String matchDate;
-    private int matchNum;
+    private Integer matchNum;
     private String matchNumStr;
     private String matchStatus;
     private String matchStatusName;

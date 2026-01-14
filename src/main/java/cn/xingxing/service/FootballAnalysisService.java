@@ -61,6 +61,9 @@ public class FootballAnalysisService {
     @Autowired
     private NotifyService notifyService;
 
+    @Autowired(required = false)
+    private cn.xingxing.websocket.AnalysisWebSocketHandler webSocketHandler;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -254,9 +257,105 @@ public class FootballAnalysisService {
         List<List<SubMatchInfo>> lists = splitIntoBatches(currentDateMatch, 3);
         lists.forEach(list -> {
             List<MatchAnalysis> analyses = analyzeMatches(list);
+            // 保存分析结果并推送
+            saveAndBroadcastAnalyses(analyses);
             //  notifyService.sendMsg(analyses);
         });
 
+    }
+
+    /**
+     * 保存分析结果到数据库并通过WebSocket广播
+     */
+    private void saveAndBroadcastAnalyses(List<MatchAnalysis> analyses) {
+        if (CollectionUtils.isEmpty(analyses)) {
+            log.warn("没有分析结果需要保存和推送");
+            return;
+        }
+
+        analyses.forEach(analysis -> {
+            try {
+                // 转换为实体对象
+                AiAnalysisResult result = convertToEntity(analysis);
+                
+                // 检查是否已存在该matchId的记录
+                AiAnalysisResult existing = aiAnalysisResultService.lambdaQuery()
+                        .eq(AiAnalysisResult::getMatchId, result.getMatchId())
+                        .one();
+                
+                if (existing != null) {
+                    // 已存在，更新记录
+                    result.setId(existing.getId());
+                    aiAnalysisResultService.updateById(result);
+                    log.info("分析结果已更新: matchId={}, homeTeam={}, awayTeam={}", 
+                            result.getMatchId(), result.getHomeTeam(), result.getAwayTeam());
+                } else {
+                    // 不存在，插入新记录
+                    aiAnalysisResultService.save(result);
+                    log.info("分析结果已保存: matchId={}, homeTeam={}, awayTeam={}", 
+                            result.getMatchId(), result.getHomeTeam(), result.getAwayTeam());
+                }
+                
+                // 通过WebSocket推送到前端
+                if (webSocketHandler != null) {
+                    webSocketHandler.broadcast(result);
+                    log.info("分析结果已推送: matchId={}", result.getMatchId());
+                } else {
+                    log.warn("WebSocket处理器未初始化，跳过推送");
+                }
+                
+            } catch (Exception e) {
+                log.error("保存或推送分析结果失败: matchId={}, error={}", 
+                        analysis.getMatchId(), e.getMessage(), e);
+            }
+        });
+    }
+
+    /**
+     * 将MatchAnalysis转换为AiAnalysisResult实体
+     */
+    private AiAnalysisResult convertToEntity(MatchAnalysis analysis) {
+        AiAnalysisResult result = new AiAnalysisResult();
+        result.setMatchId(analysis.getMatchId());
+        result.setHomeTeam(analysis.getHomeTeam());
+        result.setAwayTeam(analysis.getAwayTeam());
+        result.setMatchTime(analysis.getMatchTime());
+        result.setAiAnalysis(analysis.getAiAnalysis());
+        
+        // 从AI分析结果中提取胜平负概率和预测
+        extractPredictions(analysis.getAiAnalysis(), result);
+        
+        result.setCreateTime(LocalDateTime.now());
+        return result;
+    }
+
+    /**
+     * 从AI分析文本中提取预测信息
+     */
+    private void extractPredictions(String aiAnalysis, AiAnalysisResult result) {
+        if (aiAnalysis == null || aiAnalysis.isEmpty()) {
+            return;
+        }
+        
+        try {
+            // 尝试从JSON格式的分析结果中提取
+            if (aiAnalysis.contains("{") && aiAnalysis.contains("}")) {
+                JSONObject json = JSONObject.parseObject(aiAnalysis);
+                result.setHomeWin(json.getString("homeWin"));
+                result.setDraw(json.getString("draw"));
+                result.setAwayWin(json.getString("awayWin"));
+                result.setAiScore(json.getString("predictedScore"));
+                result.setAiResult(json.getString("predictedResult"));
+            }
+        } catch (Exception e) {
+            log.debug("无法从JSON提取预测信息，使用默认值: {}", e.getMessage());
+            // 如果解析失败，设置默认值
+            result.setHomeWin("待分析");
+            result.setDraw("待分析");
+            result.setAwayWin("待分析");
+            result.setAiScore("待分析");
+            result.setAiResult("待分析");
+        }
     }
 
     private List<List<SubMatchInfo>> splitIntoBatches(List<SubMatchInfo> analyses, int batchSize) {

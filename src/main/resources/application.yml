@@ -3,6 +3,15 @@ server:
   servlet:
     context-path: /foot
 
+# WebSocket配置
+websocket:
+  # WebSocket端点路径
+  endpoint: /ws/analysis
+  # 最大连接数限制
+  max-connections: 1000
+  # 分页查询默认大小
+  page-size: 20
+
 langchain4j:
   open-ai:
     chat-model:
