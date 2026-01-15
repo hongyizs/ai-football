@@ -34,6 +34,11 @@ public class MatchAnalysis {
 
     private String information;
     private long timestamp;
+    
+    // 新增字段：比赛状态和分析类型
+    private boolean isMatchFinished;  // 比赛是否已完赛
+    private String matchResult;       // 比赛结果
+    private String analysisType;      // 分析类型（PRE_MATCH 或 AFTER_MATCH）
 }
 
 

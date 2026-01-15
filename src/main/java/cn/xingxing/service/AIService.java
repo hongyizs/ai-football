@@ -233,6 +233,58 @@ public class AIService {
         return "";
     }
 
+    /**
+     * 单场赛后复盘分析
+     * @param matchId 比赛ID
+     * @param matchResult 比赛结果
+     * @return 复盘分析结果文本
+     */
+    public String afterMatchAnalysis(String matchId, String matchResult) {
+        // 参数验证
+        if (matchId == null || matchId.trim().isEmpty()) {
+            log.error("单场赛后复盘失败: matchId不能为空");
+            throw new IllegalArgumentException("matchId不能为空");
+        }
+        
+        if (matchResult == null || matchResult.trim().isEmpty()) {
+            log.error("单场赛后复盘失败: matchResult不能为空, matchId={}", matchId);
+            throw new IllegalArgumentException("matchResult不能为空");
+        }
+        
+        log.info("开始单场赛后复盘分析: matchId={}, matchResult={}", matchId, matchResult);
+        
+        try {
+            // 查询赛前分析结果
+            AiAnalysisResult result = aiAnalysisResultMapper.selectById(matchId);
+            
+            if (result == null) {
+                log.error("单场赛后复盘失败: 未找到比赛分析记录, matchId={}", matchId);
+                throw new IllegalArgumentException("未找到比赛分析记录: " + matchId);
+            }
+            
+            // 设置比赛结果
+            result.setMatchResult(matchResult);
+            
+            // 构建复盘分析提示词
+            String prompt = buildAfterAnalysisPrompt(result);
+            log.debug("单场赛后复盘提示词构建完成: matchId={}", matchId);
+            
+            // 调用AI进行复盘分析
+            String analysis = assistant.chatV2(prompt);
+            
+            log.info("单场赛后复盘完成: matchId={}, analysis={}", matchId, analysis);
+            
+            return analysis;
+            
+        } catch (IllegalArgumentException e) {
+            // 重新抛出参数异常
+            throw e;
+        } catch (Exception e) {
+            log.error("单场赛后复盘过程中发生异常: matchId={}, matchResult={}", matchId, matchResult, e);
+            throw new RuntimeException("单场赛后复盘失败: " + e.getMessage(), e);
+        }
+    }
+
 
     private String buildAfterAnalysisPrompt(AiAnalysisResult aiAnalysisResult) {
         return String.format("""

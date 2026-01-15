@@ -1,18 +1,20 @@
-import { For, Show, createSignal } from 'solid-js';
+import { For, Show } from 'solid-js';
 import type { AiAnalysisResult } from '../types';
 import { AnalysisDetailModal } from './AnalysisDetailModal';
+import { Pagination } from './Pagination';
 
 interface AnalysisTableProps {
   analysisList: AiAnalysisResult[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onRowClick: (analysis: AiAnalysisResult) => void;
 }
 
 /**
  * 分析结果表格组件
  */
 export function AnalysisTable(props: AnalysisTableProps) {
-  const [selectedAnalysis, setSelectedAnalysis] = createSignal<AiAnalysisResult | null>(null);
-  const [isModalOpen, setIsModalOpen] = createSignal(false);
-
   const formatTime = (time: string) => {
     try {
       return new Date(time).toLocaleString('zh-CN', {
@@ -24,16 +26,6 @@ export function AnalysisTable(props: AnalysisTableProps) {
     } catch {
       return time;
     }
-  };
-
-  const handleRowClick = (analysis: AiAnalysisResult) => {
-    setSelectedAnalysis(analysis);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedAnalysis(null), 300);
   };
 
   return (
@@ -77,7 +69,7 @@ export function AnalysisTable(props: AnalysisTableProps) {
                 {(analysis) => (
                   <tr 
                     class="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => handleRowClick(analysis)}
+                    onClick={() => props.onRowClick(analysis)}
                   >
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {formatTime(analysis.matchTime)}
@@ -108,7 +100,7 @@ export function AnalysisTable(props: AnalysisTableProps) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRowClick(analysis);
+                          props.onRowClick(analysis);
                         }}
                         class="text-blue-600 hover:text-blue-800 font-medium"
                       >
@@ -143,12 +135,12 @@ export function AnalysisTable(props: AnalysisTableProps) {
         </Show>
       </div>
 
-      {/* 详情弹窗 */}
-      <Show when={selectedAnalysis()}>
-        <AnalysisDetailModal
-          analysis={selectedAnalysis()!}
-          isOpen={isModalOpen()}
-          onClose={handleCloseModal}
+      {/* 分页 */}
+      <Show when={props.totalPages > 1}>
+        <Pagination
+          currentPage={props.currentPage}
+          totalPages={props.totalPages}
+          onPageChange={props.onPageChange}
         />
       </Show>
     </>

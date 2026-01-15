@@ -101,48 +101,176 @@ public class FootballAnalysisService {
     private MatchAnalysis analyzeSingleMatch(SubMatchInfo match) {
         try {
             String matchId = String.valueOf(match.getMatchId());
-            AiAnalysisResultVo byMatchId = aiAnalysisResultService.findByMatchId(matchId);
-            // 构建分析对象
-            MatchAnalysis analysis = MatchAnalysis.builder()
-                    .homeTeam(match.getHomeTeamAbbName())
-                    .awayTeam(match.getAwayTeamAbbName())
-                    .matchTime(parseMatchTime(match.getMatchDate(), match.getMatchTime()))
-                    .league(match.getLeagueAbbName())
-                    .matchId(matchId)
-                    .build();
-            if (byMatchId != null) {
-                analysis.setAiAnalysis(byMatchId.getAiAnalysis());
-                LocalDateTime createTime = byMatchId.getCreateTime();
-                analysis.setTimestamp(createTime.atZone(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli());
-                return analysis;
+            
+            // 查询是否已有分析结果
+            AiAnalysisResultVo existingResult = aiAnalysisResultService.findByMatchId(matchId);
+            
+            // 检查比赛是否已完赛
+            boolean isMatchFinished = false;
+            try {
+                isMatchFinished = existingResult != null 
+                    && existingResult.getMatchResult() != null 
+                    && !existingResult.getMatchResult().trim().isEmpty();
+            } catch (Exception e) {
+                log.warn("无法判断比赛状态，默认使用赛前分析: matchId={}, error={}", matchId, e.getMessage());
+                // 无法判断状态时，默认使用赛前分析
+                return performPreMatchAnalysis(match, existingResult);
             }
-            // 获取近期交锋记录
-            analysis.setRecentMatches(historicalMatchService.findHistoricalMatch(matchId));
-
-            // 获取赔率历史
-            analysis.setSimilarMatches(getSimilarMatches(matchId));
-            //特征数据
-            analysis.setMatchAnalysisData(getMatchAnalysisData(matchId));
-            //近期比赛
-            analysis.setMatchHistoryData(getMatchHistoryData(matchId));
-            analysis.setHadLists(hadListService.findHadList(matchId));
-            analysis.setHhadLists(hadListService.findHHadList(matchId));
-            analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName(), "home"));
-            analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName(), "away"));
-            Information byId = informationService.getById(matchId);
-            if (byId != null) {
-                analysis.setInformation(byId.getInfo());
+            
+            log.info("比赛状态检测: matchId={}, isMatchFinished={}, matchResult={}", 
+                    matchId, isMatchFinished, 
+                    existingResult != null ? existingResult.getMatchResult() : "null");
+            
+            if (isMatchFinished) {
+                // 比赛已完赛，执行赛后复盘
+                log.info("比赛已完赛，执行赛后复盘分析: matchId={}", matchId);
+                return performAfterMatchAnalysis(match, existingResult);
+            } else {
+                // 比赛未完赛，执行赛前预测
+                log.info("比赛未完赛，执行赛前预测分析: matchId={}", matchId);
+                return performPreMatchAnalysis(match, existingResult);
             }
-            analysis.setAiAnalysis(aiService.analyzeMatch(analysis));
-            analysis.setTimestamp(System.currentTimeMillis());
-            return analysis;
 
         } catch (Exception e) {
             log.error("分析单场比赛失败: {} vs {}",
                     match.getHomeTeamAbbName(), match.getAwayTeamAbbName(), e);
             return null;
+        }
+    }
+
+    /**
+     * 执行赛前预测分析
+     * @param match 比赛信息
+     * @param existingResult 已存在的分析结果（可能为null）
+     * @return 分析结果
+     */
+    private MatchAnalysis performPreMatchAnalysis(SubMatchInfo match, AiAnalysisResultVo existingResult) {
+        String matchId = String.valueOf(match.getMatchId());
+        
+        // 构建分析对象
+        MatchAnalysis analysis = MatchAnalysis.builder()
+                .homeTeam(match.getHomeTeamAbbName())
+                .awayTeam(match.getAwayTeamAbbName())
+                .matchTime(parseMatchTime(match.getMatchDate(), match.getMatchTime()))
+                .league(match.getLeagueAbbName())
+                .matchId(matchId)
+                .isMatchFinished(false)
+                .analysisType("PRE_MATCH")
+                .build();
+        
+        // 如果已有分析结果，直接返回
+        if (existingResult != null && existingResult.getAiAnalysis() != null) {
+            analysis.setAiAnalysis(existingResult.getAiAnalysis());
+            LocalDateTime createTime = existingResult.getCreateTime();
+            analysis.setTimestamp(createTime.atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli());
+            return analysis;
+        }
+        
+        // 获取近期交锋记录
+        analysis.setRecentMatches(historicalMatchService.findHistoricalMatch(matchId));
+
+        // 获取赔率历史
+        analysis.setSimilarMatches(getSimilarMatches(matchId));
+        //特征数据
+        analysis.setMatchAnalysisData(getMatchAnalysisData(matchId));
+        //近期比赛
+        analysis.setMatchHistoryData(getMatchHistoryData(matchId));
+        analysis.setHadLists(hadListService.findHadList(matchId));
+        analysis.setHhadLists(hadListService.findHHadList(matchId));
+        analysis.setHomeTeamStats(teamStatsService.selectByTeamName(match.getHomeTeamAbbName(), "home"));
+        analysis.setAwayTeamStats(teamStatsService.selectByTeamName(match.getAwayTeamAbbName(), "away"));
+        Information byId = informationService.getById(matchId);
+        if (byId != null) {
+            analysis.setInformation(byId.getInfo());
+        }
+        analysis.setAiAnalysis(aiService.analyzeMatch(analysis));
+        analysis.setTimestamp(System.currentTimeMillis());
+        return analysis;
+    }
+
+    /**
+     * 执行赛后复盘分析
+     * @param match 比赛信息
+     * @param existingResult 已存在的分析结果（包含比赛结果）
+     * @return 分析结果
+     */
+    private MatchAnalysis performAfterMatchAnalysis(SubMatchInfo match, AiAnalysisResultVo existingResult) {
+        String matchId = String.valueOf(match.getMatchId());
+        
+        // 构建分析对象
+        MatchAnalysis analysis = MatchAnalysis.builder()
+                .homeTeam(match.getHomeTeamAbbName())
+                .awayTeam(match.getAwayTeamAbbName())
+                .matchTime(parseMatchTime(match.getMatchDate(), match.getMatchTime()))
+                .league(match.getLeagueAbbName())
+                .matchId(matchId)
+                .isMatchFinished(true)
+                .matchResult(existingResult.getMatchResult())
+                .analysisType("AFTER_MATCH")
+                .build();
+        
+        try {
+            // 如果已有复盘分析结果，直接返回
+            if (existingResult.getAfterMatchAnalysis() != null && !existingResult.getAfterMatchAnalysis().trim().isEmpty()) {
+                log.info("已存在复盘分析结果，直接返回: matchId={}", matchId);
+                analysis.setAiAnalysis(existingResult.getAfterMatchAnalysis());
+                LocalDateTime createTime = existingResult.getCreateTime();
+                analysis.setTimestamp(createTime.atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli());
+                return analysis;
+            }
+            
+            // 调用AI服务进行单场复盘分析
+            log.info("调用AI服务进行单场复盘分析: matchId={}, matchResult={}", 
+                    matchId, existingResult.getMatchResult());
+            
+            String afterAnalysis = null;
+            try {
+                afterAnalysis = aiService.afterMatchAnalysis(matchId, existingResult.getMatchResult());
+            } catch (IllegalArgumentException e) {
+                log.error("AI服务调用参数错误: matchId={}, error={}", matchId, e.getMessage());
+                throw e;
+            } catch (Exception e) {
+                log.error("AI服务调用失败，降级到赛前分析: matchId={}, error={}", matchId, e.getMessage(), e);
+                log.warn("赛后复盘分析失败，使用赛前分析作为降级方案: matchId={}", matchId);
+                return performPreMatchAnalysis(match, existingResult);
+            }
+            
+            // 设置分析结果
+            analysis.setAiAnalysis(afterAnalysis);
+            analysis.setTimestamp(System.currentTimeMillis());
+            
+            // 保存复盘分析结果到数据库
+            try {
+                AiAnalysisResult result = aiAnalysisResultService.lambdaQuery()
+                        .eq(AiAnalysisResult::getMatchId, matchId)
+                        .one();
+                
+                if (result != null) {
+                    result.setAfterMatchAnalysis(afterAnalysis);
+                    aiAnalysisResultService.updateById(result);
+                    log.info("复盘分析结果已保存到数据库: matchId={}", matchId);
+                } else {
+                    log.warn("未找到对应的分析记录，无法保存复盘结果: matchId={}", matchId);
+                }
+            } catch (Exception e) {
+                log.error("数据库操作失败，但复盘分析已完成: matchId={}, error={}", matchId, e.getMessage(), e);
+                // 数据库操作失败不影响返回分析结果
+            }
+            
+            return analysis;
+            
+        } catch (IllegalArgumentException e) {
+            // 参数错误，降级到赛前分析
+            log.error("参数验证失败，降级到赛前分析: matchId={}, error={}", matchId, e.getMessage());
+            return performPreMatchAnalysis(match, existingResult);
+        } catch (Exception e) {
+            log.error("赛后复盘分析过程中发生未预期异常，降级到赛前分析: matchId={}", matchId, e);
+            // 降级到赛前分析
+            return performPreMatchAnalysis(match, existingResult);
         }
     }
 
